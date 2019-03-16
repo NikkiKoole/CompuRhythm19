@@ -13,6 +13,13 @@ function love.keypressed(key)
       local clone_sfx = cy:clone()
       clone_sfx:play()
    end
+   if key == 'w' then
+      bpm = bpm + 5
+   end
+   if key == 'q' then
+      bpm = bpm - 5
+   end
+
    if key == '2' then
       local clone_sfx = cb:clone()
       clone_sfx:play()
@@ -52,56 +59,37 @@ function love.keypressed(key)
    
 end
 
---Bongo High
---Bongo Low
---Conga Low
---Cowbell
---Cymbal
---Guiro 1
---Guiro 2
--- x HiHat Accent
---HiHat Metal
---HiHat
---Kick Accent
---Kick
---Rim Shot
--- x Snare Accent
---Snare
---Tamb 1
--- x Tamb 2
 
 function love.load()
    love.window.setMode(1024, 768)
-   cy = love.audio.newSource('samples/Cymbal.wav', 'static')
-   cb = love.audio.newSource('samples/Cowbell.wav', 'static')
-   -- maracas?
-   bh = love.audio.newSource('samples/Bongo High.wav', 'static')
-   bl = love.audio.newSource('samples/Bongo Low.wav', 'static')
-   
-   ta = love.audio.newSource('samples/Tamb 1.wav', 'static')
-   co = love.audio.newSource('samples/Conga Low.wav', 'static')
-   -- metalic beat?
-   hm = love.audio.newSource('samples/HiHat Metal.wav', 'static')
-   -- guiro long
-   gl = love.audio.newSource('samples/Guiro 2.wav', 'static')
-   hh = love.audio.newSource('samples/HiHat.wav', 'static')
-   gs = love.audio.newSource('samples/Guiro 1.wav', 'static')
 
-   -- clave ?
-   --xx = love.audio.newSource('samples/Guiro 1.wav', 'static')
-   sr = love.audio.newSource('samples/Snare.wav', 'static')
-   rm = love.audio.newSource('samples/Rim Shot.wav', 'static')
-   kc = love.audio.newSource('samples/Kick.wav', 'static')
-   ka = love.audio.newSource('samples/Kick Accent.wav', 'static')
-   
-   --cy:play()
    pattern = {
-      
-   }
-   emptyPattern(pattern, 24)
-   print(inspect(pattern))
+      {name='Cymbal', sound=love.audio.newSource('samples/Cymbal.wav', 'static')},
+      {name='Cowbell', sound=love.audio.newSource('samples/Cowbell.wav', 'static')},
+      {name='Conga', sound=love.audio.newSource('samples/Conga Low.wav', 'static')},
+      {name='HiHat accent', sound=love.audio.newSource('samples/HiHat Accent.wav', 'static')},
+      {name='Bongo High', sound=love.audio.newSource('samples/Bongo High.wav', 'static')},
+      {name='Bongo Low', sound=love.audio.newSource('samples/Bongo Low.wav', 'static')},
+      {name='Tamb 1', sound=love.audio.newSource('samples/Tamb 1.wav', 'static')},
+      {name='Tamb 2', sound=love.audio.newSource('samples/Tamb 2.wav', 'static')},
+      {name='Conga Low', sound=love.audio.newSource('samples/Conga Low.wav', 'static')},
+      {name='HiHat Metal', sound=love.audio.newSource('samples/HiHat Metal.wav', 'static')},
+      {name='HiHat', sound=love.audio.newSource('samples/HiHat.wav', 'static')},
+      {name='Guiro 1', sound=love.audio.newSource('samples/Guiro 1.wav', 'static')},
+      {name='Guiro 2', sound=love.audio.newSource('samples/Guiro 2.wav', 'static')},
+      {name='Snare accent', sound=love.audio.newSource('samples/Snare Accent.wav', 'static')},
+      {name='Snare', sound=love.audio.newSource('samples/Snare.wav', 'static')},
+      {name='Rim', sound=love.audio.newSource('samples/Rim Shot.wav', 'static')},
+      {name='Kick', sound=love.audio.newSource('samples/Kick.wav', 'static')},
+      {name='Kick accent', sound=love.audio.newSource('samples/Kick Accent.wav', 'static')},
+      --{name='DX7-E-Piano-C5', sound=love.audio.newSource('samples/DX7-E-Piano-C5.wav', 'static')}
 
-   bpm = 200
+   }
+   
+   
+   
+   addBars(pattern, 16)
+   bpm = 300
    playing = false
    playhead = 1
    timeInBeat = 0
@@ -109,23 +97,23 @@ end
 
 
 
-function emptyPattern(p, count)
-   table.insert(p, {})
-   table.insert(p, {})
-
-   for i = 0, count do
-      table.insert(p[1], false)
-      table.insert(p[2], false)
+function addBars(pattern, count)
+   pattern.length = count
+   for i = 1, #pattern do
+      pattern[i].values = {}
+      for j = 0, count do
+	 table.insert(pattern[i].values, false)
+      end
    end
 end
 			       
 function love.mousepressed(x, y)
+   local x2 = x - 100
    if (y < 0 or y > #pattern * 32) then return end
-   if (x < 0 or x > ((#pattern[1]) * 32)) then return end
-   local index = math.floor(x/32) + 1
+   if (x2 < 0 or x2 > pattern.length * 32) then return end
+   local index = math.floor(x2/32) + 1
    local row = math.floor(y/32) + 1
-   print(row, index)
-   pattern[row][index] = not pattern[row][index]
+   pattern[row].values[index] = not pattern[row].values[index]
 end
 
 function love.update(dt)
@@ -133,18 +121,20 @@ function love.update(dt)
       timeInBeat = timeInBeat +  dt
       if (timeInBeat > 60/bpm) then
 	 playhead = playhead + 1
-	 if (playhead > #pattern[1]) then playhead = 1 end
-	 if pattern[1][playhead] then
-	    local clone_sfx = rm:clone()
-	    clone_sfx:setPitch(love.math.random()/2)
-	    clone_sfx:play()
+	 if (playhead > pattern.length) then playhead = 1 end
+	 for i=1, #pattern do
+	       if pattern[i].values[playhead] then
+		  local sfx = pattern[i].sound:clone()
+		  --sfx:setVolume(love.math.random()*2)
+		  --sfx:setPitch(0.2 + 1.8 * love.math.random())
+
+		  
+		  --sfx:setPitch(love.math.random())
+
+		  sfx:play()
+	       end
 	 end
-	 if pattern[2][playhead] then
-	    local clone_sfx = cy:clone()
-	    clone_sfx:setPitch(love.math.random()/2)
-	    clone_sfx:play()
-	 end
-	 
+ 
 	 timeInBeat = timeInBeat - 60/bpm
       end
       
@@ -158,21 +148,26 @@ function love.draw()
    love.graphics.clear(255/255, 198/255, 49/255)
    love.graphics.setColor(35/255,36/255,38/255)
    love.graphics.setLineWidth( 1)
+   love.graphics.print(bpm, 0, 700)
+   for i =1, #pattern do
 
-   for y = 1, 2 do
-   for x = 1, #pattern[y] do
-      if (pattern[y][x]) then
-	 love.graphics.rectangle('fill',-32 + x*32, -32 + y*32, 32, 32 )
-      else
-	 love.graphics.rectangle('line',-32 + x*32, -32 + y*32, 32, 32 )
+      love.graphics.print(pattern[i].name, 0, -32+ 32 * i)
+
+      --we assume some width is enough to fit all the names say 100
+      for j=1, #(pattern[i].values)-1 do
+	 if (pattern[i].values[j]) then
+    	    love.graphics.rectangle('fill',100 + -32 + j*32, -32 + i*32, 32, 32 )
+    	 else
+    	    love.graphics.rectangle('line',100 + -32 + j*32, -32 + i*32, 32, 32 )
+    	 end
       end
-   end
+      
    end
    
    if playing then
       love.graphics.setColor(255/255,255/255,255/255)
       love.graphics.setLineWidth(2)
-      love.graphics.rectangle('line',-32 + playhead*32, 0, 32, 32* #pattern )
+      love.graphics.rectangle('line',100 + -32 + playhead*32, 0, 32, 32* #pattern )
    end
    
 end
