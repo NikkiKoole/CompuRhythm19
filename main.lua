@@ -128,11 +128,18 @@ end
 function love.update(dt)
    if (playing) then
       timeInBeat = timeInBeat +  dt
-      --if swing ~= 50 then
-	-- print("ahoy! ".. playhead)
-      --end
       
-      if (timeInBeat >= 60/bpm) then
+      local timeToAdd = 0 -- can also be negative
+      if swing ~= 50 then
+	 timeToAdd = ((swing-50)/100.0) * (60/bpm)
+	 
+	 if playhead % 2 == 0 then
+	 elseif  playhead % 2 == 1 then
+	    timeToAdd = timeToAdd * -1
+	 end
+      end
+      
+      if (timeInBeat >= (60/bpm + timeToAdd)) then
 	 playhead = playhead + 1
 	 if (playhead > pattern.length) then playhead = 1 end
 	 for i=1, #pattern do
@@ -148,7 +155,7 @@ function love.update(dt)
 	       end
 	 end
 
-	 timeInBeat = timeInBeat - 60/bpm
+	 timeInBeat = timeInBeat - (60/bpm + timeToAdd)
       end
 
 
