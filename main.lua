@@ -82,10 +82,12 @@ end
 
 function handlePress(x,y, value)
    local row, index = getRowAndIndex(x,y)
-   if value ~= nil then
-      pattern[row].values[index] = value
-   else
-      pattern[row].values[index] = not pattern[row].values[index]
+   if row > -1 and index > -1 then
+      if value ~= nil then
+	 pattern[row].values[index] = value
+      else
+	 pattern[row].values[index] = not pattern[row].values[index]
+      end
    end
 end
 
@@ -94,8 +96,8 @@ end
 function getRowAndIndex(x,y)
    local x2 = x - gridMarginLeft
    local y2 = y - gridMarginTop
-   if (y2 < 0 or y2 > #pattern * cellHeight) then return end
-   if (x2 < 0 or x2 > pattern.length * cellWidth) then return end
+   if (y2 < 0 or y2 > #pattern * cellHeight) then return -1,-1 end
+   if (x2 < 0 or x2 > pattern.length * cellWidth) then return -1,-1 end
    local index = math.floor(x2/cellWidth) + 1
    local row = math.floor(y2/cellHeight) + 1
    row = math.min(#pattern , row)
@@ -108,9 +110,12 @@ function love.mousepressed(x, y)
    -- figure out if changing the cell under me means deleting r adding
    -- do that for all the cells touched by the subsequent move
    local row, index = getRowAndIndex(x,y)
-   local value = pattern[row].values[index]
-   drawingValue = not value
-   handlePress(x,y, drawingValue)
+   
+   if row > -1 and index > -1 then
+      local value = pattern[row].values[index]
+      drawingValue = not value
+      handlePress(x,y, drawingValue)
+   end
 end
 function love.mousemoved(x,y)
    local down = love.mouse.isDown( 1)
@@ -123,6 +128,10 @@ end
 function love.update(dt)
    if (playing) then
       timeInBeat = timeInBeat +  dt
+      --if swing ~= 50 then
+	-- print("ahoy! ".. playhead)
+      --end
+      
       if (timeInBeat >= 60/bpm) then
 	 playhead = playhead + 1
 	 if (playhead > pattern.length) then playhead = 1 end
