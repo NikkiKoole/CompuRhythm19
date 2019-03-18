@@ -20,42 +20,42 @@ function love.keypressed(key)
       bpm = bpm - 5
    end
 
-   if key == '2' then
-      local clone_sfx = cb:clone()
-      clone_sfx:play()
-   end
-   if key == '3' then
-      local clone_sfx = bh:clone()
-      clone_sfx:play()
-   end
-   if key == '4' then
-      local clone_sfx = bl:clone()
-      clone_sfx:play()
-   end
-   if key == '5' then
-      local clone_sfx = ta:clone()
-      clone_sfx:play()
-   end
-   if key == '6' then
-      local clone_sfx = co:clone()
-      clone_sfx:play()
-   end
-   if key == '7' then
-      local clone_sfx = hm:clone()
-      clone_sfx:play()
-   end
-   if key == '8' then
-      local clone_sfx = gl:clone()
-      clone_sfx:play()
-   end
-   if key == '9' then
-      local clone_sfx = hh:clone()
-      clone_sfx:play()
-   end
-   if key == '0' then
-      local clone_sfx = gs:clone()
-      clone_sfx:play()
-   end
+   -- if key == '2' then
+   --    local clone_sfx = cb:clone()
+   --    clone_sfx:play()
+   -- end
+   -- if key == '3' then
+   --    local clone_sfx = bh:clone()
+   --    clone_sfx:play()
+   -- end
+   -- if key == '4' then
+   --    local clone_sfx = bl:clone()
+   --    clone_sfx:play()
+   -- end
+   -- if key == '5' then
+   --    local clone_sfx = ta:clone()
+   --    clone_sfx:play()
+   -- end
+   -- if key == '6' then
+   --    local clone_sfx = co:clone()
+   --    clone_sfx:play()
+   -- end
+   -- if key == '7' then
+   --    local clone_sfx = hm:clone()
+   --    clone_sfx:play()
+   -- end
+   -- if key == '8' then
+   --    local clone_sfx = gl:clone()
+   --    clone_sfx:play()
+   -- end
+   -- if key == '9' then
+   --    local clone_sfx = hh:clone()
+   --    clone_sfx:play()
+   -- end
+   -- if key == '0' then
+   --    local clone_sfx = gs:clone()
+   --    clone_sfx:play()
+   -- end
    
 end
 
@@ -128,8 +128,8 @@ function love.update(dt)
 		  --sfx:setVolume(love.math.random()*2)
 		  --sfx:setPitch(0.2 + 1.8 * love.math.random())
 
-		  
-		  --sfx:setPitch(love.math.random())
+		  --sfx:setPitch(2)
+		  --sfx:setPitch(love.math.random()/3)
 
 		  sfx:play()
 	       end
@@ -146,9 +146,19 @@ end
 
 function love.draw()
    love.graphics.clear(255/255, 198/255, 49/255)
+
+   love.graphics.setColor(35/255,36/255,38/255)
+   --love.graphics.circle("fill", 100, 600, 24)
+   --love.graphics.setColor(255/255,255/255,255/255)
+   love.graphics.circle("line", 100, 600, 24)
+
+   
    love.graphics.setColor(35/255,36/255,38/255)
    love.graphics.setLineWidth( 1)
    love.graphics.print(bpm, 0, 700)
+
+   
+   
    for i =1, #pattern do
 
       love.graphics.print(pattern[i].name, 0, -32+ 32 * i)
@@ -169,5 +179,7 @@ function love.draw()
       love.graphics.setLineWidth(2)
       love.graphics.rectangle('line',100 + -32 + playhead*32, 0, 32, 32* #pattern )
    end
+
+
    
 end
