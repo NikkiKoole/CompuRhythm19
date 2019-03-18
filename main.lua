@@ -9,61 +9,16 @@ function love.keypressed(key)
       playing = not playing
 
    end
-
-   if key == '1' then
-      local clone_sfx = cy:clone()
-      clone_sfx:play()
-   end
-   if key == 'w' then
-      bpm = bpm + 5
-   end
-   if key == 'q' then
-      bpm = bpm - 5
-   end
-
-   -- if key == '2' then
-   --    local clone_sfx = cb:clone()
-   --    clone_sfx:play()
-   -- end
-   -- if key == '3' then
-   --    local clone_sfx = bh:clone()
-   --    clone_sfx:play()
-   -- end
-   -- if key == '4' then
-   --    local clone_sfx = bl:clone()
-   --    clone_sfx:play()
-   -- end
-   -- if key == '5' then
-   --    local clone_sfx = ta:clone()
-   --    clone_sfx:play()
-   -- end
-   -- if key == '6' then
-   --    local clone_sfx = co:clone()
-   --    clone_sfx:play()
-   -- end
-   -- if key == '7' then
-   --    local clone_sfx = hm:clone()
-   --    clone_sfx:play()
-   -- end
-   -- if key == '8' then
-   --    local clone_sfx = gl:clone()
-   --    clone_sfx:play()
-   -- end
-   -- if key == '9' then
-   --    local clone_sfx = hh:clone()
-   --    clone_sfx:play()
-   -- end
-   -- if key == '0' then
-   --    local clone_sfx = gs:clone()
-   --    clone_sfx:play()
-   -- end
-
 end
 
 
 function love.load()
+   
+
    love.window.setMode(1024, 768)
-   volumeSlider = newSlider(200, 700, 200, 300, 0, 1000, function(v) bpm=v end)
+   font = love.graphics.newFont("futura.ttf", 20)
+   love.graphics.setFont(font)
+   
 
    pattern = {
       {name='Cymbal', sound=love.audio.newSource('samples/Cymbal.wav', 'static')},
@@ -84,17 +39,33 @@ function love.load()
       {name='Rim', sound=love.audio.newSource('samples/Rim Shot.wav', 'static')},
       {name='Kick', sound=love.audio.newSource('samples/Kick.wav', 'static')},
       {name='Kick accent', sound=love.audio.newSource('samples/Kick Accent.wav', 'static')},
-      --{name='DX7-E-Piano-C5', sound=love.audio.newSource('samples/DX7-E-Piano-C5.wav', 'static')}
-
    }
-
-
-
-   addBars(pattern, 16)
+   
+   addBars(pattern, 32)
    bpm = 300
+   swing = 50 -- percentage of swing, 50 == 0 (robert linn's way of doing swing)
    playing = false
    playhead = 1
    timeInBeat = 0
+   gridMarginTop = 100
+   gridMarginLeft = 110 
+   drawingValue = 1
+   cellWidth = 24
+   cellHeight = 32
+
+   --success, message = love.filesystem.write("wrote_this.txt", inspect(pattern, {indent=""}))
+   --path = love.filesystem.getAppdataDirectory( )
+   --print(path)
+
+   bpmSlider = newSlider(100+gridMarginLeft, 710,
+			 200, bpm, 0, 1000,
+			 function(v) bpm=v end,
+			 {track="line"})
+   
+   swingSlider = newSlider(100+gridMarginLeft, 710 + cellHeight,
+			 200, swing, 50, 100,
+			 function(v) swing=v end,
+			 {track="line"})
 end
 
 
@@ -109,19 +80,50 @@ function addBars(pattern, count)
    end
 end
 
-function love.mousepressed(x, y)
-   local x2 = x - 100
-   if (y < 0 or y > #pattern * 32) then return end
-   if (x2 < 0 or x2 > pattern.length * 32) then return end
-   local index = math.floor(x2/32) + 1
-   local row = math.floor(y/32) + 1
-   pattern[row].values[index] = not pattern[row].values[index]
+function handlePress(x,y, value)
+   local row, index = getRowAndIndex(x,y)
+   if value ~= nil then
+      pattern[row].values[index] = value
+   else
+      pattern[row].values[index] = not pattern[row].values[index]
+   end
 end
+
+
+
+function getRowAndIndex(x,y)
+   local x2 = x - gridMarginLeft
+   local y2 = y - gridMarginTop
+   if (y2 < 0 or y2 > #pattern * cellHeight) then return end
+   if (x2 < 0 or x2 > pattern.length * cellWidth) then return end
+   local index = math.floor(x2/cellWidth) + 1
+   local row = math.floor(y2/cellHeight) + 1
+   row = math.min(#pattern , row)
+   index = math.min(pattern.length , index)
+   return row, index
+end
+
+
+function love.mousepressed(x, y)
+   -- figure out if changing the cell under me means deleting r adding
+   -- do that for all the cells touched by the subsequent move
+   local row, index = getRowAndIndex(x,y)
+   local value = pattern[row].values[index]
+   drawingValue = not value
+   handlePress(x,y, drawingValue)
+end
+function love.mousemoved(x,y)
+   local down = love.mouse.isDown( 1)
+   if down then
+      handlePress(x,y, drawingValue)
+   end
+end
+
 
 function love.update(dt)
    if (playing) then
       timeInBeat = timeInBeat +  dt
-      if (timeInBeat > 60/bpm) then
+      if (timeInBeat >= 60/bpm) then
 	 playhead = playhead + 1
 	 if (playhead > pattern.length) then playhead = 1 end
 	 for i=1, #pattern do
@@ -142,49 +144,53 @@ function love.update(dt)
 
 
    end
-   volumeSlider:update()
+   bpmSlider:update()
+   swingSlider:update()
 end
 
 
 function love.draw()
-   love.graphics.clear(255, 198, 49)
-
-   love.graphics.setColor(35,36,38)
-   --love.graphics.circle("fill", 100, 600, 24)
-   --love.graphics.setColor(255/255,255/255,255/255)
-   love.graphics.circle("line", 100, 600, 24)
-
-
-   love.graphics.setColor(35,36,38)
-   love.graphics.setLineWidth( 1)
-   love.graphics.print(bpm, 0, 700)
-
-
+   
+   love.graphics.clear(255/255, 198/255, 49/255)
+   love.graphics.setColor(35/255,36/255,38/255)
+   love.graphics.setLineWidth( 2)
+  
 
    for i =1, #pattern do
-
-      love.graphics.print(pattern[i].name, 0, -32+ 32 * i)
-
+      
+      love.graphics.print(pattern[i].name,
+			  20, gridMarginTop + (i-1) * cellHeight)
+      
       --we assume some width is enough to fit all the names say 100
       for j=1, #(pattern[i].values)-1 do
 	 if (pattern[i].values[j]) then
-    	    love.graphics.rectangle('fill',100 + -32 + j*32, -32 + i*32, 32, 32 )
+    	    love.graphics.rectangle('fill',
+				    gridMarginLeft + (j-1)*cellWidth,
+				    gridMarginTop + (i-1)*cellHeight,
+				    cellWidth, cellHeight )
     	 else
-    	    love.graphics.rectangle('line',100 + -32 + j*32, -32 + i*32, 32, 32 )
+    	    love.graphics.rectangle('line',
+				    gridMarginLeft + (j-1)*cellWidth,
+				    gridMarginTop + (i-1)*cellHeight,
+				    cellWidth, cellHeight )
     	 end
       end
 
    end
 
    if playing then
-      love.graphics.setColor(255,255,255)
+      love.graphics.setColor(255/255,255/255,255/255)
       love.graphics.setLineWidth(2)
-      love.graphics.rectangle('line',100 + -32 + playhead*32, 0, 32, 32* #pattern )
+      love.graphics.rectangle('line',
+			      gridMarginLeft + (playhead-1)*24,
+			      gridMarginTop, 24, cellHeight* #pattern )
    end
 
    love.graphics.setColor(0, 0, 0)
 
-    -- draw slider, set color and line style before calling
-    volumeSlider:draw()
-
+   -- draw slider, set color and line style before calling
+    love.graphics.print('bpm: '..bpm, 20, 700)
+    bpmSlider:draw()
+    love.graphics.print('swing: '..swing, 20, 700+cellHeight)
+    swingSlider:draw()
 end
