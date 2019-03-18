@@ -1,4 +1,5 @@
 inspect = require "inspect"
+require 'simple-slider'
 
 function love.keypressed(key)
    if key == "escape" then
@@ -6,9 +7,9 @@ function love.keypressed(key)
    end
    if key == "space" then
       playing = not playing
-      
+
    end
-   
+
    if key == '1' then
       local clone_sfx = cy:clone()
       clone_sfx:play()
@@ -56,12 +57,13 @@ function love.keypressed(key)
    --    local clone_sfx = gs:clone()
    --    clone_sfx:play()
    -- end
-   
+
 end
 
 
 function love.load()
    love.window.setMode(1024, 768)
+   volumeSlider = newSlider(200, 700, 200, 300, 0, 1000, function(v) bpm=v end)
 
    pattern = {
       {name='Cymbal', sound=love.audio.newSource('samples/Cymbal.wav', 'static')},
@@ -85,9 +87,9 @@ function love.load()
       --{name='DX7-E-Piano-C5', sound=love.audio.newSource('samples/DX7-E-Piano-C5.wav', 'static')}
 
    }
-   
-   
-   
+
+
+
    addBars(pattern, 16)
    bpm = 300
    playing = false
@@ -106,7 +108,7 @@ function addBars(pattern, count)
       end
    end
 end
-			       
+
 function love.mousepressed(x, y)
    local x2 = x - 100
    if (y < 0 or y > #pattern * 32) then return end
@@ -129,36 +131,36 @@ function love.update(dt)
 		  --sfx:setPitch(0.2 + 1.8 * love.math.random())
 
 		  --sfx:setPitch(2)
-		  --sfx:setPitch(love.math.random()/3)
+		  --sfx:setPitch(love.math.random())
 
 		  sfx:play()
 	       end
 	 end
- 
+
 	 timeInBeat = timeInBeat - 60/bpm
       end
-      
+
 
    end
-   
+   volumeSlider:update()
 end
 
 
 function love.draw()
-   love.graphics.clear(255/255, 198/255, 49/255)
+   love.graphics.clear(255, 198, 49)
 
-   love.graphics.setColor(35/255,36/255,38/255)
+   love.graphics.setColor(35,36,38)
    --love.graphics.circle("fill", 100, 600, 24)
    --love.graphics.setColor(255/255,255/255,255/255)
    love.graphics.circle("line", 100, 600, 24)
 
-   
-   love.graphics.setColor(35/255,36/255,38/255)
+
+   love.graphics.setColor(35,36,38)
    love.graphics.setLineWidth( 1)
    love.graphics.print(bpm, 0, 700)
 
-   
-   
+
+
    for i =1, #pattern do
 
       love.graphics.print(pattern[i].name, 0, -32+ 32 * i)
@@ -171,15 +173,18 @@ function love.draw()
     	    love.graphics.rectangle('line',100 + -32 + j*32, -32 + i*32, 32, 32 )
     	 end
       end
-      
+
    end
-   
+
    if playing then
-      love.graphics.setColor(255/255,255/255,255/255)
+      love.graphics.setColor(255,255,255)
       love.graphics.setLineWidth(2)
       love.graphics.rectangle('line',100 + -32 + playhead*32, 0, 32, 32* #pattern )
    end
 
+   love.graphics.setColor(0, 0, 0)
 
-   
+    -- draw slider, set color and line style before calling
+    volumeSlider:draw()
+
 end
