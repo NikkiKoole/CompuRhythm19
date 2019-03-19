@@ -44,6 +44,7 @@ function love.load()
    addBars(pattern, 32)
    bpm = 300
    swing = 50 -- percentage of swing, 50 == 0 (robert linn's way of doing swing)
+   pitch = 1.0
    playing = false
    playhead = 1
    timeInBeat = 0
@@ -66,6 +67,12 @@ function love.load()
 			 200, swing, 50, 100,
 			 function(v) swing=v end,
 			 {track="line"})
+
+   pitchSlider = newSlider(100+gridMarginLeft + 320, 710 ,
+			 200, pitch, 0, 10.0,
+			 function(v) pitch=v end,
+			 {track="line"})
+
 end
 
 
@@ -134,6 +141,7 @@ function love.update(dt)
 	 timeToAdd = ((swing-50)/100.0) * (60/bpm)
 	 
 	 if playhead % 2 == 0 then
+	    -- these we add
 	 elseif  playhead % 2 == 1 then
 	    timeToAdd = timeToAdd * -1
 	 end
@@ -143,12 +151,16 @@ function love.update(dt)
 	 playhead = playhead + 1
 	 if (playhead > pattern.length) then playhead = 1 end
 	 for i=1, #pattern do
-	       if pattern[i].values[playhead] then
-		  local sfx = pattern[i].sound:clone()
-		  --sfx:setVolume(love.math.random()*2)
-		  --sfx:setPitch(0.2 + 1.8 * love.math.random())
+	    if pattern[i].values[playhead] then
+	       --print(inspect(pattern[i]))
+	       local sfx = pattern[i].sound:clone()
 
-		  --sfx:setPitch(2)
+	       --sfx:setVolume(love.math.random()*2)
+	       --sfx:setPitch(0.2 + 1.8 * love.math.random())
+
+	       --if not tostring(pitch) == "nan" then 
+	       sfx:setPitch(math.max(pitch, 0.0000001))
+	       --end
 		  --sfx:setPitch(love.math.random())
 
 		  sfx:play()
@@ -162,6 +174,7 @@ function love.update(dt)
    end
    bpmSlider:update()
    swingSlider:update()
+   pitchSlider:update()
 end
 
 
@@ -209,4 +222,6 @@ function love.draw()
     bpmSlider:draw()
     love.graphics.print('swing: '..swing, 20, 700+cellHeight)
     swingSlider:draw()
+    love.graphics.print('pitch: '..pitch, 20 + 320, 700)
+    pitchSlider:draw()
 end
