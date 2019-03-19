@@ -45,6 +45,7 @@ function love.load()
    bpm = 300
    swing = 50 -- percentage of swing, 50 == 0 (robert linn's way of doing swing)
    pitch = 1.0
+   pitchRandom = 0
    playing = false
    playhead = 1
    timeInBeat = 0
@@ -71,6 +72,11 @@ function love.load()
    pitchSlider = newSlider(100+gridMarginLeft + 320, 710 ,
 			 200, pitch, 0, 10.0,
 			 function(v) pitch=v end,
+			 {track="line"})
+
+   pitchRandomSlider = newSlider(100+gridMarginLeft + 320, 710 + cellHeight ,
+			 200, pitchRandom, 0, 1.0,
+			 function(v) pitchRandom=v end,
 			 {track="line"})
 
 end
@@ -159,7 +165,32 @@ function love.update(dt)
 	       --sfx:setPitch(0.2 + 1.8 * love.math.random())
 
 	       --if not tostring(pitch) == "nan" then 
-	       sfx:setPitch(math.max(pitch, 0.0000001))
+	       local tempPitch = 0.000001 -- math.max(pitch, 0.0000001)
+	       if pitchRandom then
+		  tempPitch = math.max((love.math.random() * pitchRandom), 0.0000001)
+		  if (love.math.random() > 0.5 ) then
+		     tempPitch = tempPitch * -1
+		  end
+		  
+	       end
+	       local p = math.max(pitch + (tempPitch*pitch), 0)
+	       local step
+	       if p < 1.0 then
+		  step = 1.0 - p
+	       else
+		  if p > 0 then
+		     step = p - 1.0
+		  end
+	       end
+	       --print(p, 1.0/12, step, step * (1.0/12))
+	       local getRandomNotePitch = function()
+		  local r = love.math.random() * 12
+		  return math.floor(r) * (1.0/12)
+	       end
+	       sfx:setPitch(math.max(p, 0.00001))
+	       
+	       --sfx:setPitch(math.max(getRandomNotePitch(), 0.000001))
+	       
 	       --end
 		  --sfx:setPitch(love.math.random())
 
@@ -175,6 +206,7 @@ function love.update(dt)
    bpmSlider:update()
    swingSlider:update()
    pitchSlider:update()
+   pitchRandomSlider:update()
 end
 
 
@@ -224,4 +256,6 @@ function love.draw()
     swingSlider:draw()
     love.graphics.print('pitch: '..pitch, 20 + 320, 700)
     pitchSlider:draw()
+    love.graphics.print('pitch-rnd: '..pitchRandom, 20 + 320, 700 + cellHeight)
+    pitchRandomSlider:draw()
 end
