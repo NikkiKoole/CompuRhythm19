@@ -1,6 +1,8 @@
 inspect = require "inspect"
 require 'simple-slider'
 
+colorDivider = 1.0
+
 function love.keypressed(key)
    if key == "escape" then
       love.event.quit()
@@ -13,12 +15,12 @@ end
 
 
 function love.load()
-   
+
 
    love.window.setMode(1024, 768)
    font = love.graphics.newFont("futura.ttf", 20)
    love.graphics.setFont(font)
-   
+
 
    pattern = {
       {name='Cymbal', sound=love.audio.newSource('samples/Cymbal.wav', 'static')},
@@ -40,7 +42,7 @@ function love.load()
       {name='Kick', sound=love.audio.newSource('samples/Kick.wav', 'static')},
       {name='Kick accent', sound=love.audio.newSource('samples/Kick Accent.wav', 'static')},
    }
-   
+
    addBars(pattern, 32)
    bpm = 300
    swing = 50 -- percentage of swing, 50 == 0 (robert linn's way of doing swing)
@@ -50,7 +52,7 @@ function love.load()
    playhead = 1
    timeInBeat = 0
    gridMarginTop = 100
-   gridMarginLeft = 110 
+   gridMarginLeft = 110
    drawingValue = 1
    cellWidth = 24
    cellHeight = 32
@@ -63,7 +65,7 @@ function love.load()
 			 200, bpm, 0, 1000,
 			 function(v) bpm=v end,
 			 {track="line"})
-   
+
    swingSlider = newSlider(100+gridMarginLeft, 710 + cellHeight,
 			 200, swing, 50, 100,
 			 function(v) swing=v end,
@@ -123,7 +125,7 @@ function love.mousepressed(x, y)
    -- figure out if changing the cell under me means deleting r adding
    -- do that for all the cells touched by the subsequent move
    local row, index = getRowAndIndex(x,y)
-   
+
    if row > -1 and index > -1 then
       local value = pattern[row].values[index]
       drawingValue = not value
@@ -141,18 +143,18 @@ end
 function love.update(dt)
    if (playing) then
       timeInBeat = timeInBeat +  dt
-      
+
       local timeToAdd = 0 -- can also be negative
       if swing ~= 50 then
 	 timeToAdd = ((swing-50)/100.0) * (60/bpm)
-	 
+
 	 if playhead % 2 == 0 then
 	    -- these we add
 	 elseif  playhead % 2 == 1 then
 	    timeToAdd = timeToAdd * -1
 	 end
       end
-      
+
       if (timeInBeat >= (60/bpm + timeToAdd)) then
 	 playhead = playhead + 1
 	 if (playhead > pattern.length) then playhead = 1 end
@@ -164,14 +166,14 @@ function love.update(dt)
 	       --sfx:setVolume(love.math.random()*2)
 	       --sfx:setPitch(0.2 + 1.8 * love.math.random())
 
-	       --if not tostring(pitch) == "nan" then 
+	       --if not tostring(pitch) == "nan" then
 	       local tempPitch = 0.000001 -- math.max(pitch, 0.0000001)
 	       if pitchRandom then
 		  tempPitch = math.max((love.math.random() * pitchRandom), 0.0000001)
 		  if (love.math.random() > 0.5 ) then
 		     tempPitch = tempPitch * -1
 		  end
-		  
+
 	       end
 	       local p = math.max(pitch + (tempPitch*pitch), 0)
 	       local step
@@ -188,9 +190,9 @@ function love.update(dt)
 		  return math.floor(r) * (1.0/12)
 	       end
 	       sfx:setPitch(math.max(p, 0.00001))
-	       
+
 	       --sfx:setPitch(math.max(getRandomNotePitch(), 0.000001))
-	       
+
 	       --end
 		  --sfx:setPitch(love.math.random())
 
@@ -211,17 +213,17 @@ end
 
 
 function love.draw()
-   
-   love.graphics.clear(255/255, 198/255, 49/255)
-   love.graphics.setColor(35/255,36/255,38/255)
+
+   love.graphics.clear(255/colorDivider, 198/colorDivider, 49/colorDivider)
+   love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider)
    love.graphics.setLineWidth( 2)
-  
+
 
    for i =1, #pattern do
-      
+
       love.graphics.print(pattern[i].name,
 			  20, gridMarginTop + (i-1) * cellHeight)
-      
+
       --we assume some width is enough to fit all the names say 100
       for j=1, #(pattern[i].values)-1 do
 	 if (pattern[i].values[j]) then
@@ -240,7 +242,7 @@ function love.draw()
    end
 
    if playing then
-      love.graphics.setColor(255/255,255/255,255/255)
+      love.graphics.setColor(255/colorDivider,255/colorDivider,255/colorDivider)
       love.graphics.setLineWidth(2)
       love.graphics.rectangle('line',
 			      gridMarginLeft + (playhead-1)*24,
