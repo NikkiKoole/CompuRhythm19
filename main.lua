@@ -15,12 +15,9 @@ end
 
 
 function love.load()
-
-
    love.window.setMode(1024, 768)
    font = love.graphics.newFont("futura.ttf", 20)
    love.graphics.setFont(font)
-
 
    pattern = {
       {name='Cymbal', sound=love.audio.newSource('samples/Cymbal.wav', 'static')},
@@ -45,24 +42,26 @@ function love.load()
    totalLength = 32
    addBars(pattern, totalLength)
    timers = prepareTimers(pattern)
+
    bpm = 300
    swing = 50 -- percentage of swing, 50 == 0 (robert linn's way of doing swing)
    pitch = 1.0
    pitchRandom = 0
+
    playing = false
-   playhead = 1
-   timeInBeat = 0
+   
    gridMarginTop = 100
    gridMarginLeft = 110
    drawingValue = 1
    cellWidth = 24
    cellHeight = 32
+
    openedInstrument = 0
-
-
    customPitch = 0
    customSwing = 50
    customVolume = 1
+   customRandomPitch = 1
+   
    --success, message = love.filesystem.write("wrote_this.txt", inspect(pattern, {indent=""}))
    --path = love.filesystem.getAppdataDirectory( )
    --print(path)
@@ -118,6 +117,16 @@ function love.load()
 			    
 			 end,
 			 {track="line"})
+    customRandomPitchSlider = newSlider(300 + gridMarginLeft, 50  ,
+			 100, customRandomPitch, 50, 100,
+			 function(v)
+			    if openedInstrument > 0 then
+			       pattern[openedInstrument].randomPitch = v
+			    end
+			    customRandomPitch = v
+			    
+			 end,
+			 {track="line"})
     
 
 end
@@ -138,6 +147,7 @@ function addBars(pattern, count)
       pattern[i].volume = 1.0
       pattern[i].muted = false
       pattern[i].pitch = 1.0
+      pattern[i].randomPitch = 0
        pattern[i].swing = 50
       for j = 0, count do
 	 table.insert(pattern[i].values, false)
@@ -231,11 +241,20 @@ function love.mousepressed(x, y)
 			    
 			 end,
 			 {track="line"})
+	 
+	 customRandomPitchSlider = newSlider(gridMarginLeft + 130 + 600,
+				       index * cellHeight + gridMarginTop - 20  ,
+			 100, (pattern[index]).randomPitch, 0, 1,
+			 function(v)
+			    if openedInstrument > 0 then
+			       pattern[openedInstrument].randomPitch = v
+			    end
+			    customRandomPitch = v
+			    
+			 end,
+			 {track="line"})
    end
    
-
-   -- check if you click an instrument to open its panel
-   --love.graphics.rectangle('line',20,  gridMarginTop + (i-1)*cellHeight, gridMarginLeft-20, cellHeight )
 end
 function love.mousemoved(x,y)
    local down = love.mouse.isDown( 1)
@@ -288,6 +307,13 @@ function love.update(dt)
 		     tempPitch = tempPitch * -1
 		  end
 	       end
+	       if pattern[i].randomPitch then
+		  tempPitch = math.max((love.math.random() * pattern[i].randomPitch), 0.0000001)
+		  if (love.math.random() > 0.5 ) then
+		     tempPitch = tempPitch * -1
+		  end
+	       end
+	       
 	       
 	       local p = math.max(pitch + (tempPitch*pitch), 0)
 	       local layerPitch = pattern[i].pitch
@@ -295,11 +321,11 @@ function love.update(dt)
 
 	       -- accents
 
-	       local volume = 1.0
+	       local volume = 0.8
 	       
 	       --love.audio.setVolume(1)
 	       if timers[i].playhead % 4 == 0 then
-		  volume = volume * 1.2
+		  volume = volume + 0.2
 		  --love.audio.setVolume(1.2)
 	       end
 	       volume = volume * pattern[i].volume
@@ -324,6 +350,7 @@ function love.update(dt)
    customPitchSlider:update()
    customSwingSlider:update()
    customVolumeSlider:update()
+   customRandomPitchSlider:update()
 end
 
 
@@ -370,6 +397,10 @@ function love.draw()
       customSwingSlider:draw()
       love.graphics.print('volume: '.. pattern[openedInstrument].volume, gridMarginLeft+ 400,  gridMarginTop + (openedInstrument-1)*cellHeight)
       customVolumeSlider:draw()
+      love.graphics.print('rnd: '.. pattern[openedInstrument].randomPitch, gridMarginLeft+ 600,  gridMarginTop + (openedInstrument-1)*cellHeight)
+      
+      
+      customRandomPitchSlider:draw()
    end
    
 
@@ -397,4 +428,6 @@ function love.draw()
     pitchSlider:draw()
     love.graphics.print('pitch-rnd: '..pitchRandom, 20 + 320, 700 + cellHeight)
     pitchRandomSlider:draw()
+    
+    
 end
