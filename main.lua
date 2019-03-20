@@ -44,6 +44,7 @@ function love.load()
    }
    totalLength = 32
    addBars(pattern, totalLength)
+   timers = prepareTimers(pattern)
    bpm = 300
    swing = 50 -- percentage of swing, 50 == 0 (robert linn's way of doing swing)
    pitch = 1.0
@@ -61,6 +62,7 @@ function love.load()
 
    customPitch = 0
    customSwing = 50
+   customVolume = 1
    --success, message = love.filesystem.write("wrote_this.txt", inspect(pattern, {indent=""}))
    --path = love.filesystem.getAppdataDirectory( )
    --print(path)
@@ -71,7 +73,7 @@ function love.load()
 			 {track="line"})
 
    swingSlider = newSlider(100+gridMarginLeft, 710 + cellHeight,
-			 200, swing, 50, 100,
+			 200, swing, 0, 100,
 			 function(v) swing=v end,
 			 {track="line"})
 
@@ -90,30 +92,43 @@ function love.load()
 			 function(v)
 			    if openedInstrument > 0 then
 			       pattern[openedInstrument].pitch = v
-			       --print("wanna do stuff!", v)
-			       --customPitch=pattern[openedInstrument].pitch
 			    end
 			    customPitch = v
 			    
 			 end,
 			 {track="line"})
 
-    customSwingSlider = newSlider(200 + gridMarginLeft, 50  ,
+   customVolumeSlider = newSlider(gridMarginLeft, 50  ,
+			 100, customVolume, 0, 1.0,
+			 function(v)
+			    if openedInstrument > 0 then
+			       pattern[openedInstrument].volume = v
+			    end
+			    customVolume = v
+			 end,
+			 {track="line"})
+
+    customSwingSlider = newSlider(300 + gridMarginLeft, 50  ,
 			 100, customSwing, 50, 100,
 			 function(v)
 			    if openedInstrument > 0 then
 			       pattern[openedInstrument].swing = v
-			       --print("wanna do stuff!", v)
-			       --customPitch=pattern[openedInstrument].pitch
 			    end
 			    customSwing = v
 			    
 			 end,
 			 {track="line"})
     
-   --print(inspect(customPitchSlider))
+
 end
 
+function prepareTimers(pattern)
+   local result = {}
+   for i = 1, #pattern do
+      result[i] = {timeInBeat=0, playhead=1}
+   end
+   return result
+end
 
 
 function addBars(pattern, count)
@@ -193,14 +208,26 @@ function love.mousepressed(x, y)
 			 end,
 			 {track="line"})
 
-	 customSwingSlider = newSlider(gridMarginLeft + 130 + 130,
+	 customSwingSlider = newSlider(gridMarginLeft + 130 + 200,
 				       index * cellHeight + gridMarginTop - 20  ,
-			 100, (pattern[index]).swing, 50, 100,
+			 100, (pattern[index]).swing, 0, 100,
 			 function(v)
 			    if openedInstrument > 0 then
 			       pattern[openedInstrument].swing = v
 			    end
 			    customSwing = v
+			    
+			 end,
+			 {track="line"})
+
+	 customVolumeSlider = newSlider(gridMarginLeft + 130 + 400,
+				       index * cellHeight + gridMarginTop - 20  ,
+			 100, (pattern[index]).volume, 0, 1,
+			 function(v)
+			    if openedInstrument > 0 then
+			       pattern[openedInstrument].volume = v
+			    end
+			    customVolume = v
 			    
 			 end,
 			 {track="line"})
@@ -220,86 +247,83 @@ end
 
 function love.update(dt)
    if (playing) then
-      timeInBeat = timeInBeat +  dt
-
-      local timeToAdd = 0 -- can also be negative
-      if swing ~= 50 then
-	 timeToAdd = ((swing-50)/100.0) * (60/bpm)
-
-	 if playhead % 2 == 0 then
-	    -- these we add
-	 elseif  playhead % 2 == 1 then
-	    timeToAdd = timeToAdd * -1
-	 end
-      end
       
+      for i=1, #pattern do
+	 timers[i].timeInBeat = timers[i].timeInBeat + dt
+	 
+	 local timeToAdd = 0
+	 
+	 if swing ~= 50 then
+	    timeToAdd = ((swing-50)/100.0) * (60/bpm)
 
-      if (timeInBeat >= (60/bpm + timeToAdd)) then
-	 playhead = playhead + 1
-	 if (playhead > pattern.length) then playhead = 1 end
-	 for i=1, #pattern do
-	    if pattern[i].values[playhead] then
-	       --print(inspect(pattern[i]))
+	    if timers[i].playhead % 2 == 0 then
+	       -- these we add
+	    elseif  timers[i].playhead % 2 == 1 then
+	       timeToAdd = timeToAdd * -1
+	    end
+	 end
+	 
+	 if pattern[i].swing ~= 50 then
+	    timeToAdd = ((pattern[i].swing-50)/100.0) * (60/bpm)
+
+	    if timers[i].playhead % 2 == 0 then
+	       -- these we add
+	    elseif  timers[i].playhead % 2 == 1 then
+	       timeToAdd = timeToAdd * -1
+	    end
+	 end
+	 
+	 if (timers[i].timeInBeat >= (60/bpm + timeToAdd)) then
+	    timers[i].playhead = timers[i].playhead + 1
+	    if (timers[i].playhead > pattern.length) then timers[i].playhead = 1 end
+
+	    if pattern[i].values[timers[i].playhead] then
 	       local sfx = pattern[i].sound:clone()
-
-	       --sfx:setVolume(love.math.random()*2)
-	       --sfx:setPitch(0.2 + 1.8 * love.math.random())
-
-	       --if not tostring(pitch) == "nan" then
+	       
 	       local tempPitch = 0.000001 -- math.max(pitch, 0.0000001)
+	       
 	       if pitchRandom then
 		  tempPitch = math.max((love.math.random() * pitchRandom), 0.0000001)
 		  if (love.math.random() > 0.5 ) then
 		     tempPitch = tempPitch * -1
 		  end
-
 	       end
+	       
 	       local p = math.max(pitch + (tempPitch*pitch), 0)
-	       local step
-	       if p < 1.0 then
-		  step = 1.0 - p
-	       else
-		  if p > 0 then
-		     step = p - 1.0
-		  end
-	       end
-	       --print(p, 1.0/12, step, step * (1.0/12))
-	       local getRandomNotePitch = function()
-		  local r = love.math.random() * 12
-		  return math.floor(r) * (1.0/12)
-	       end
-
 	       local layerPitch = pattern[i].pitch
-	       print(layerPitch)
 	       sfx:setPitch(math.max(p*layerPitch, 0.00001) )
 
-	       --sfx:setPitch(math.max(getRandomNotePitch(), 0.000001))
+	       -- accents
 
-	       --end
-	       --sfx:setPitch(love.math.random())
+	       local volume = 1.0
 	       
-	       --love.audio.setPosition( 1 - love.math.random() * 2, 0, 0 )
-	       love.audio.setVolume(1)
-	       if playhead % 4 == 0 then
-		  love.audio.setVolume(1.2)
+	       --love.audio.setVolume(1)
+	       if timers[i].playhead % 4 == 0 then
+		  volume = volume * 1.2
+		  --love.audio.setVolume(1.2)
 	       end
+	       volume = volume * pattern[i].volume
+	       sfx:setVolume(volume)
 	       
 	       sfx:play()
-	       end
+	    end
+	    timers[i].timeInBeat = timers[i].timeInBeat - (60/bpm + timeToAdd)
 	 end
-
-	 timeInBeat = timeInBeat - (60/bpm + timeToAdd)
+	 
       end
-
-
+      
    end
+   
+
+   
+   
    bpmSlider:update()
    swingSlider:update()
    pitchSlider:update()
    pitchRandomSlider:update()
    customPitchSlider:update()
    customSwingSlider:update()
-   
+   customVolumeSlider:update()
 end
 
 
@@ -334,25 +358,32 @@ function love.draw()
 
    if openedInstrument > 0 then
       --print(openedInstrument)
-      love.graphics.setColor(255/colorDivider,0/colorDivider,0/colorDivider)
+      love.graphics.setColor(255/colorDivider,218/colorDivider,69/colorDivider)
       love.graphics.rectangle('fill',
-				    gridMarginLeft,
-				    gridMarginTop + (openedInstrument-1)*cellHeight,
-				    cellWidth * totalLength , cellHeight )
+				    gridMarginLeft - 1,
+				    -1 + gridMarginTop + (openedInstrument-1)*cellHeight,
+				    2 + cellWidth * totalLength , 2+ cellHeight )
       love.graphics.setColor(0/colorDivider,0/colorDivider,0/colorDivider)
       love.graphics.print('pitch: '.. pattern[openedInstrument].pitch, gridMarginLeft,  gridMarginTop + (openedInstrument-1)*cellHeight)
       customPitchSlider:draw()
-
+      love.graphics.print('swing: '.. pattern[openedInstrument].swing, gridMarginLeft+ 200,  gridMarginTop + (openedInstrument-1)*cellHeight)
       customSwingSlider:draw()
+      love.graphics.print('volume: '.. pattern[openedInstrument].volume, gridMarginLeft+ 400,  gridMarginTop + (openedInstrument-1)*cellHeight)
+      customVolumeSlider:draw()
    end
    
 
    if playing then
-      love.graphics.setColor(255/colorDivider,255/colorDivider,255/colorDivider)
-      love.graphics.setLineWidth(2)
-      love.graphics.rectangle('line',
-			      gridMarginLeft + (playhead-1)*24,
-			      gridMarginTop, 24, cellHeight* #pattern )
+      for i=1, #timers do
+	 local playhead = timers[i].playhead
+	 love.graphics.setColor(255/colorDivider,255/colorDivider,255/colorDivider)
+	 love.graphics.setLineWidth(2)
+	 love.graphics.rectangle('line',
+				 gridMarginLeft + (playhead-1)*24,
+				 gridMarginTop + ((i-1)*cellHeight), 24, cellHeight )
+      end
+      
+      
    end
 
    love.graphics.setColor(0, 0, 0)
