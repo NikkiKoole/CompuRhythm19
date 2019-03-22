@@ -76,6 +76,7 @@ function love.load()
    pattern = {
       -- {name='Clarinet', sound=love.audio.newSource('samples/clarinet_loop_middle.wav', 'static')},
       --{name='Piano', sound=love.audio.newSource('samples/Yamaha-DX7-E-Piano-1-C5.wav', 'static')},
+      {name='CymbalR', url='samples/Cymbal_reversed.wav'},
       {name='Cymbal', url='samples/Cymbal.wav'},
       {name='Cowbell', url='samples/Cowbell.wav'},
       {name='Conga', url='samples/Conga Low.wav'},
