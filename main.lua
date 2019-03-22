@@ -35,10 +35,8 @@ function love.keypressed(key)
 end
 
 function love.filedropped(file)
-    local data = file:read()
-    --print("Content of " .. file:getFilename() .. ' is')
-    --print(data)
-    local read = loadstring("return "..data)()
+    --local data = file:read()
+    local read = loadstring("return ".. file:read())()
     addBars(pattern, totalLength)
     timers = prepareTimers(pattern)
 
@@ -121,56 +119,14 @@ function love.load()
    customVolume = 1
    customRandomPitch = 1
 
-
-
-   --path = love.filesystem.getAppdataDirectory( )
-   --print(path)
-
    updateSliders()
 
-   customPitchSlider = newSlider(gridMarginLeft, 50  ,
-			 100, customPitch, 0, 3.0,
-			 function(v)
-			    if openedInstrument > 0 then
-			       pattern[openedInstrument].pitch = v
-			    end
-			    customPitch = v
+   customPitchSlider = newSlider(0, 0 ,0, 0, 0, 0, nil, {track="line"})
+   customVolumeSlider = newSlider(0, 0 ,0, 0, 0, 0, nil, {track="line"})
+   customSwingSlider = newSlider(0, 0 ,0, 0, 0, 0, nil, {track="line"})
+   customRandomPitchSlider = newSlider(0, 0 ,0, 0, 0, 0, nil, {track="line"})
 
-			 end,
-			 {track="line"})
-
-   customVolumeSlider = newSlider(gridMarginLeft, 50  ,
-			 100, customVolume, 0, 1.0,
-			 function(v)
-			    if openedInstrument > 0 then
-			       pattern[openedInstrument].volume = v
-			    end
-			    customVolume = v
-			 end,
-			 {track="line"})
-
-    customSwingSlider = newSlider(300 + gridMarginLeft, 50  ,
-			 100, customSwing, 50, 100,
-			 function(v)
-			    if openedInstrument > 0 then
-			       pattern[openedInstrument].swing = v
-			    end
-			    customSwing = v
-
-			 end,
-			 {track="line"})
-    customRandomPitchSlider = newSlider(300 + gridMarginLeft, 50  ,
-			 100, customRandomPitch, 50, 100,
-			 function(v)
-			    if openedInstrument > 0 then
-			       pattern[openedInstrument].randomPitch = v
-			    end
-			    customRandomPitch = v
-
-			 end,
-			 {track="line"})
-
-
+   time = love.timer.getTime( )
 end
 
 function updateSliders()
@@ -271,53 +227,29 @@ function love.mousepressed(x, y)
 	    openedInstrument = index
 	 end
 
-	 customPitchSlider = newSlider(gridMarginLeft + 130,
-				       index * cellHeight + gridMarginTop - 20  ,
-			 100, (pattern[index]).pitch, 0, 3.0,
-			 function(v)
-			    if openedInstrument > 0 then
-			       pattern[openedInstrument].pitch = v
-			    end
-			    customPitch = v
+	 local uiY = index * cellHeight + gridMarginTop - 20
+	 local uiX = gridMarginLeft + 130
+	 local p = pattern[index]
+	 local func = function(name)
+	    return function(v)
+	       if openedInstrument > 0 then
+		  pattern[openedInstrument][name] = v
+	       end
+	       --prop=v
+	    end
+	 end
+	 
+	 customPitchSlider =
+	    newSlider(uiX, uiY, 100, p.pitch, 0, 1.0,func('pitch'), {track="line"})
 
-			 end,
-			 {track="line"})
+	 customSwingSlider =
+	    newSlider(uiX + 200,uiY , 100, p.swing, 0, 100,func('swing'),{track="line"})
 
-	 customSwingSlider = newSlider(gridMarginLeft + 130 + 200,
-				       index * cellHeight + gridMarginTop - 20  ,
-			 100, (pattern[index]).swing, 0, 100,
-			 function(v)
-			    if openedInstrument > 0 then
-			       pattern[openedInstrument].swing = v
-			    end
-			    customSwing = v
-
-			 end,
-			 {track="line"})
-
-	 customVolumeSlider = newSlider(gridMarginLeft + 130 + 400,
-				       index * cellHeight + gridMarginTop - 20  ,
-			 100, (pattern[index]).volume, 0, 1,
-			 function(v)
-			    if openedInstrument > 0 then
-			       pattern[openedInstrument].volume = v
-			    end
-			    customVolume = v
-
-			 end,
-			 {track="line"})
-
-	 customRandomPitchSlider = newSlider(gridMarginLeft + 130 + 600,
-				       index * cellHeight + gridMarginTop - 20  ,
-			 100, (pattern[index]).randomPitch, 0, 1,
-			 function(v)
-			    if openedInstrument > 0 then
-			       pattern[openedInstrument].randomPitch = v
-			    end
-			    customRandomPitch = v
-
-			 end,
-			 {track="line"})
+	 customVolumeSlider =
+	    newSlider(uiX + 400,uiY , 100, p.volume, 0, 1, func('volume'), {track="line"})
+	 
+	 customRandomPitchSlider =
+	    newSlider(uiX + 600,uiY  ,100, p.randomPitch, 0, 1, func('randomPitch'), {track="line"})
    end
 
 end
@@ -363,7 +295,7 @@ function love.update(dt)
 
 	    if pattern[i].values[timers[i].playhead] then
 	       local sfx = pattern[i].sound:clone()
-
+	       --print(time -  love.timer.getTime( ))
 	       local tempPitch = 0.000001 -- math.max(pattern.pitch, 0.0000001)
 
 	       if pitchRandom then
@@ -372,87 +304,20 @@ function love.update(dt)
 		     tempPitch = tempPitch * -1
 		  end
 	       end
-	       if pattern[i].randomPitch > 0 then
-		  -- tempPitch = math.max((love.math.random() * pattern[i].randomPitch), 0.0000001)
-		  -- if (love.math.random() > 0.5 ) then
-		  --    tempPitch = tempPitch * -1
-		  -- end
-		  local notes = {0, 4, 7}
-		  local picked = math.floor(math.random()* #notes)
-		  local p = notes[picked+1]
-		  --local twelve = (math.floor(love.math.random()*12))
-		  --twelve =  timers[i].playhead % 12
-		  --local p = (1.0/12) * twelve
-		  --print(twelve, p, pattern[i].randomPitch)
-		  tempPitch = 1 + (1.0/12)*p
-	       end
-
 
 	       local p = math.max(pattern.pitch + (tempPitch*pattern.pitch), 0)
 	       local layerPitch = pattern[i].pitch
 	       sfx:setPitch(math.max(p*layerPitch, 0.00001) )
 
 	       -- accents
-
 	       local volume = 0.8
-
-	       --love.audio.setVolume(1)
 	       if timers[i].playhead % 4 == 0 then
 		  volume = volume + 0.2
-		  --love.audio.setVolume(1.2)
 	       end
-
-	       if pattern[i].randomPitch > 0 then
-		  local sfx2 = pattern[i].sound:clone()
-		  local sfx3 = pattern[i].sound:clone()
-
-		  -- how to get the value for much higher and lower say +2 and -2 octaves ?
-		  -- in 1 octave higher (+1) its 12 steps of pitch between 2.0 and 4.0
-		  -- in 2 octave higher (+1) its 12 steps of pitch between 4.0 and 8.0
-		  -- in 1 octave lower (+1) its 12 steps of pitch between 0 and 1
-		  --0.5 == 1 octave lower
-		  --0.25 is two
-		  local octave = math.floor(love.math.random()*3) + 1
-		  --print(octave)
-		  octave = 1 --+ timers[i].playhead % 3
---		  local froms = {
---		     0.25, 0.5, 1.0, 2.0, 4.0
---		  }
---		  local froms = {
---		     0.5, 1.0, 2.0
---		  }
-		  local froms = {
-		     1.0
-		  }
-
-		  --print(octave)
-		  --local chords = {
-		  --   {0,4,7}, {}
-		 -- }
-		  --if timers[i].playhead % 2 == 0 then
-		  sfx:setPitch(froms[octave] + 0 * (froms[octave]/12.0))
-		  sfx:setPitch(froms[octave] + 4 * (froms[octave]/12.0))
-		  sfx:setPitch(froms[octave] + 7 * (froms[octave]/12.0))
-
-		  --else
-		  -- sfx:setPitch(froms[octave] + 7 * (froms[octave]/12.0))
-		  -- sfx:setPitch(froms[octave] + 11 * (froms[octave]/12.0))
-		  -- sfx:setPitch(froms[octave] + 3 * (froms[octave]/12.0))
-		  --end
-		  sfx:play()
-		  sfx2:play()
-		  sfx3:play()
-		  --print(inspect(sfx))
-	       else
-		  -- if i == 1 then -- clarinet is first
-		  --    sfx:setLooping(true)
-		  -- end
 
 	       volume = volume * pattern[i].volume
 	       sfx:setVolume(volume)
 	       sfx:play()
-	       --print(sfx:tell("samples"))
-	       end
 	    end
 	    timers[i].timeInBeat = timers[i].timeInBeat - (60/pattern.bpm + timeToAdd)
 	 end
@@ -506,17 +371,19 @@ function love.draw()
 
    if openedInstrument > 0 then
       --print(openedInstrument)
+      local p = pattern[openedInstrument]
+      local ty = gridMarginTop + (openedInstrument-1)*cellHeight
       love.graphics.setColor(255/colorDivider,218/colorDivider,69/colorDivider)
       love.graphics.rectangle('fill',
 				    gridMarginLeft - 1,
 				    -1 + gridMarginTop + (openedInstrument-1)*cellHeight,
 				    2 + cellWidth * totalLength , 2+ cellHeight )
       love.graphics.setColor(0/colorDivider,0/colorDivider,0/colorDivider)
-      love.graphics.print('pitch: '.. pattern[openedInstrument].pitch, gridMarginLeft,  gridMarginTop + (openedInstrument-1)*cellHeight)
+      love.graphics.print('pitch: '.. p.pitch, gridMarginLeft,  ty)
       customPitchSlider:draw()
-      love.graphics.print('swing: '.. pattern[openedInstrument].swing, gridMarginLeft+ 200,  gridMarginTop + (openedInstrument-1)*cellHeight)
+      love.graphics.print('swing: '.. p.swing, gridMarginLeft+ 200,  ty)
       customSwingSlider:draw()
-      love.graphics.print('volume: '.. pattern[openedInstrument].volume, gridMarginLeft+ 400,  gridMarginTop + (openedInstrument-1)*cellHeight)
+      love.graphics.print('volume: '.. p.volume, gridMarginLeft+ 400,  ty)
       customVolumeSlider:draw()
       --love.graphics.print('rnd: '.. pattern[openedInstrument].randomPitch, gridMarginLeft+ 600,  gridMarginTop + (openedInstrument-1)*cellHeight)
 
@@ -549,7 +416,7 @@ function love.draw()
     pitchSlider:draw()
     --love.graphics.print('pitch-rnd: '..pattern.pitchRandom, 20 + 320, 700 + cellHeight)
     --pitchRandomSlider:draw()
---    count = love.audio.getActiveSourceCount( )
---    love.graphics.print('sources: '..count, 0,0)
+    count = love.audio.getActiveSourceCount( )
+    love.graphics.print('sources: '..count, 0,0)
 
 end
