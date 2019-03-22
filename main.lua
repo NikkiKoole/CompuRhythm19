@@ -388,6 +388,7 @@ function love.update(dt)
 	       volume = volume * pattern[i].volume
 	       sfx:setVolume(volume)
 	       sfx:play()
+	       --print(sfx:tell("samples"))
 	       end
 	    end
 	    timers[i].timeInBeat = timers[i].timeInBeat - (60/bpm + timeToAdd)
