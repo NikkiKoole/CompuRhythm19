@@ -20,6 +20,8 @@ function love.load()
    love.graphics.setFont(font)
 
    pattern = {
+      {name='Clarinet', sound=love.audio.newSource('samples/clarinet_loop_middle.wav', 'static')},
+      --{name='Piano', sound=love.audio.newSource('samples/Yamaha-DX7-E-Piano-1-C5.wav', 'static')},
       {name='Cymbal', sound=love.audio.newSource('samples/Cymbal.wav', 'static')},
       {name='Cowbell', sound=love.audio.newSource('samples/Cowbell.wav', 'static')},
       {name='Conga', sound=love.audio.newSource('samples/Conga Low.wav', 'static')},
@@ -307,11 +309,19 @@ function love.update(dt)
 		     tempPitch = tempPitch * -1
 		  end
 	       end
-	       if pattern[i].randomPitch then
-		  tempPitch = math.max((love.math.random() * pattern[i].randomPitch), 0.0000001)
-		  if (love.math.random() > 0.5 ) then
-		     tempPitch = tempPitch * -1
-		  end
+	       if pattern[i].randomPitch > 0 then
+		  -- tempPitch = math.max((love.math.random() * pattern[i].randomPitch), 0.0000001)
+		  -- if (love.math.random() > 0.5 ) then
+		  --    tempPitch = tempPitch * -1
+		  -- end
+		  local notes = {0, 4, 7}
+		  local picked = math.floor(math.random()* #notes)
+		  local p = notes[picked+1]
+		  --local twelve = (math.floor(love.math.random()*12))
+		  --twelve =  timers[i].playhead % 12
+		  --local p = (1.0/12) * twelve 
+		  --print(twelve, p, pattern[i].randomPitch)
+		  tempPitch = 1 + (1.0/12)*p
 	       end
 	       
 	       
@@ -328,10 +338,57 @@ function love.update(dt)
 		  volume = volume + 0.2
 		  --love.audio.setVolume(1.2)
 	       end
+
+	       if pattern[i].randomPitch > 0 then
+		  local sfx2 = pattern[i].sound:clone()
+		  local sfx3 = pattern[i].sound:clone()
+
+		  -- how to get the value for much higher and lower say +2 and -2 octaves ?
+		  -- in 1 octave higher (+1) its 12 steps of pitch between 2.0 and 4.0
+		  -- in 2 octave higher (+1) its 12 steps of pitch between 4.0 and 8.0
+		  -- in 1 octave lower (+1) its 12 steps of pitch between 0 and 1
+		  --0.5 == 1 octave lower
+		  --0.25 is two 
+		  local octave = math.floor(love.math.random()*3) + 1
+		  --print(octave)
+		  octave = 1 --+ timers[i].playhead % 3
+--		  local froms = {
+--		     0.25, 0.5, 1.0, 2.0, 4.0
+--		  }
+--		  local froms = {
+--		     0.5, 1.0, 2.0
+--		  }
+		  local froms = {
+		     1.0
+		  }
+
+		  --print(octave)
+		  --local chords = {
+		  --   {0,4,7}, {}
+		 -- }
+		  --if timers[i].playhead % 2 == 0 then
+		  sfx:setPitch(froms[octave] + 0 * (froms[octave]/12.0))
+		  sfx:setPitch(froms[octave] + 4 * (froms[octave]/12.0))
+		  sfx:setPitch(froms[octave] + 7 * (froms[octave]/12.0))
+
+		  --else
+		  -- sfx:setPitch(froms[octave] + 7 * (froms[octave]/12.0))
+		  -- sfx:setPitch(froms[octave] + 11 * (froms[octave]/12.0))
+		  -- sfx:setPitch(froms[octave] + 3 * (froms[octave]/12.0))
+		  --end
+		  sfx:play()
+		  sfx2:play()
+		  sfx3:play()
+		  --print(inspect(sfx))
+	       else
+		  if i == 1 then -- clarinet is first
+		     sfx:setLooping(true)
+		  end
+		  
 	       volume = volume * pattern[i].volume
 	       sfx:setVolume(volume)
-	       
 	       sfx:play()
+	       end
 	    end
 	    timers[i].timeInBeat = timers[i].timeInBeat - (60/bpm + timeToAdd)
 	 end
@@ -428,6 +485,7 @@ function love.draw()
     pitchSlider:draw()
     love.graphics.print('pitch-rnd: '..pitchRandom, 20 + 320, 700 + cellHeight)
     pitchRandomSlider:draw()
-    
+    count = love.audio.getActiveSourceCount( )
+    love.graphics.print('sources: '..count, 0,0)
     
 end
