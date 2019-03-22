@@ -518,10 +518,10 @@ function love.draw()
       customSwingSlider:draw()
       love.graphics.print('volume: '.. pattern[openedInstrument].volume, gridMarginLeft+ 400,  gridMarginTop + (openedInstrument-1)*cellHeight)
       customVolumeSlider:draw()
-      love.graphics.print('rnd: '.. pattern[openedInstrument].randomPitch, gridMarginLeft+ 600,  gridMarginTop + (openedInstrument-1)*cellHeight)
+      --love.graphics.print('rnd: '.. pattern[openedInstrument].randomPitch, gridMarginLeft+ 600,  gridMarginTop + (openedInstrument-1)*cellHeight)
 
 
-      customRandomPitchSlider:draw()
+      --customRandomPitchSlider:draw()
    end
 
 
@@ -547,8 +547,8 @@ function love.draw()
     swingSlider:draw()
     love.graphics.print('pitch: '..pattern.pitch, 20 + 320, 700)
     pitchSlider:draw()
-    love.graphics.print('pitch-rnd: '..pattern.pitchRandom, 20 + 320, 700 + cellHeight)
-    pitchRandomSlider:draw()
+    --love.graphics.print('pitch-rnd: '..pattern.pitchRandom, 20 + 320, 700 + cellHeight)
+    --pitchRandomSlider:draw()
 --    count = love.audio.getActiveSourceCount( )
 --    love.graphics.print('sources: '..count, 0,0)
 
