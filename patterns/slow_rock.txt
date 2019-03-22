@@ -1,0 +1,169 @@
+{ {
+muted = false,
+name = "Cymbal",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Cymbal.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Cowbell",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Cowbell.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Conga",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Conga Low.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "HiHat accent",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/HiHat Accent.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Bongo High",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Bongo High.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Bongo Low",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Bongo Low.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Tamb 1",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Tamb 1.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Tamb 2",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Tamb 2.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Conga Low",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Conga Low.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "HiHat Metal",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/HiHat Metal.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "HiHat",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/HiHat.wav",
+values = { true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Guiro 1",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Guiro 1.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Guiro 2",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Guiro 2.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Snare accent",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Snare Accent.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Snare",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Snare.wav",
+values = { false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Rim",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Rim Shot.wav",
+values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Kick",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Kick.wav",
+values = { true, false, false, false, false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false },
+volume = 1
+}, {
+muted = false,
+name = "Kick accent",
+pitch = 1,
+randomPitch = 0,
+swing = 50,
+url = "samples/Kick Accent.wav",
+values = { true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false },
+volume = 1
+},
+bpm = 480,
+length = 24,
+pitch = 1,
+pitchRandom = 0,
+swing = 50
+}
