@@ -78,11 +78,15 @@ function love.load()
    love.graphics.setFont(font)
    love.audio.setPosition(0, 1, 0)
    pattern = {
+      {name='bd', url='samples/TR808WAV/BD/BD1010.wav'},
+      {name='bd', url='samples/TR808WAV/BD/BD1050.wav'},
+      {name='bd', url='samples/tr606/01bd.wav'},
+      {name='sd', url='samples/tr606/02sd.wav'},
+      {name='ch', url='samples/tr606/03ch.wav'},
       {name='CLAV', url='samples/kr55/KR55CLAV.wav'},
       {name='donk', url='samples/donk/Donk1.wav'},
       {name='donk', url='samples/donk/Donk2.wav'},
       {name='donk', url='samples/donk/Donk3.wav'},
-
       {name='CHaT', url='samples/kr55/KR55CHAT.wav'},
       {name='CNGA', url='samples/kr55/KR55CNGA.wav'},
       {name='bass', url='samples/cr8000/CR8KBASS.wav'},
@@ -105,8 +109,8 @@ function love.load()
       {name='Rim', url='samples/cr78/Rim Shot.wav'},
       {name='Kick', url='samples/cr78/Kick.wav'},
       {name='Kick accent', url='samples/cr78/Kick Accent.wav'},
-      }
---love.audio.newSource('samples/Conga Low.wav', 'static')
+   }
+
    totalLength = 32
    addBars(pattern, totalLength)
    timers = prepareTimers(pattern)
