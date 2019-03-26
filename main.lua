@@ -311,7 +311,6 @@ function love.update(dt)
    
    resolutionTimer = resolutionTimer + dt
    --print(resolutionTimer, 1.0/32, dt)
-   
 --   print(60/pattern.bpm)
    
    local multiplier = (60/(pattern.bpm*4))
@@ -415,7 +414,6 @@ function draw_button(x,y,p, run)
       love.graphics.rectangle('line',x,y,cellWidth,cellHeight )
 
    end
-   
 
    if run then
       local mx, my = love.mouse.getPosition( )
@@ -459,11 +457,11 @@ function love.draw()
       for j=1, #(pattern[i].values)-1 do
 	 
 	 
-	 if ((j-1) %  pattern.measure == 0) then -- show a thicker line at measures
+	 if (j %  pattern.measure == 0) then -- show a thicker line at measures
 	    --print(j % 4, j)
-	    love.graphics.line(gridMarginLeft + (j-1)*cellWidth,
+	    love.graphics.line(gridMarginLeft + (j)*cellWidth,
 			       gridMarginTop ,
-			       gridMarginLeft + (j-1)*cellWidth,
+			       gridMarginLeft + (j)*cellWidth,
 			       gridMarginTop + (#pattern)*cellHeight
 			       
 	    )
