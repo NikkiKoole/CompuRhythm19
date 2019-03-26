@@ -4,7 +4,7 @@ name = "Cymbal",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Cymbal.wav",
+url = "samples/cr78/Cymbal.wav",
 values = { true, false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, false },
 volume = 1
 }, {
@@ -13,7 +13,7 @@ name = "Cowbell",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Cowbell.wav",
+url = "samples/cr78/Cowbell.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -22,7 +22,7 @@ name = "Conga",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Conga Low.wav",
+url = "samples/cr78/Conga Low.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -31,7 +31,7 @@ name = "HiHat accent",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/HiHat Accent.wav",
+url = "samples/cr78/HiHat Accent.wav",
 values = { true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false },
 volume = 1
 }, {
@@ -40,7 +40,7 @@ name = "Bongo High",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Bongo High.wav",
+url = "samples/cr78/Bongo High.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -49,7 +49,7 @@ name = "Bongo Low",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Bongo Low.wav",
+url = "samples/cr78/Bongo Low.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -58,7 +58,7 @@ name = "Tamb 1",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Tamb 1.wav",
+url = "samples/cr78/Tamb 1.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -67,7 +67,7 @@ name = "Tamb 2",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Tamb 2.wav",
+url = "samples/cr78/Tamb 2.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -76,7 +76,7 @@ name = "Conga Low",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Conga Low.wav",
+url = "samples/cr78/Conga Low.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -85,7 +85,7 @@ name = "HiHat Metal",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/HiHat Metal.wav",
+url = "samples/cr78/HiHat Metal.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -94,7 +94,7 @@ name = "HiHat",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/HiHat.wav",
+url = "samples/cr78/HiHat.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -103,7 +103,7 @@ name = "Guiro 1",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Guiro 1.wav",
+url = "samples/cr78/Guiro 1.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -112,7 +112,7 @@ name = "Guiro 2",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Guiro 2.wav",
+url = "samples/cr78/Guiro 2.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -121,7 +121,7 @@ name = "Snare accent",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Snare Accent.wav",
+url = "samples/cr78/Snare Accent.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -130,7 +130,7 @@ name = "Snare",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Snare.wav",
+url = "samples/cr78/Snare.wav",
 values = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
 volume = 1
 }, {
@@ -139,7 +139,7 @@ name = "Rim",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Rim Shot.wav",
+url = "samples/cr78/Rim Shot.wav",
 values = { true, false, false, true, false, false, true, false, false, false, true, false, false, true, false, false, false },
 volume = 1
 }, {
@@ -148,7 +148,7 @@ name = "Kick",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Kick.wav",
+url = "samples/cr78/Kick.wav",
 values = { true, false, false, true, true, false, false, true, true, false, false, true, true, false, false, true, false },
 volume = 1
 }, {
@@ -157,7 +157,7 @@ name = "Kick accent",
 pitch = 1,
 randomPitch = 0,
 swing = 50,
-url = "samples/Kick Accent.wav",
+url = "samples/cr78/Kick Accent.wav",
 values = { false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false },
 volume = 1
 },

@@ -18,6 +18,8 @@ function copy(obj, seen, ignore)
   return res
 end
 
+
+
 function love.keypressed(key)
    if key == "escape" then
       love.event.quit()
@@ -53,6 +55,7 @@ function love.filedropped(file)
        pattern[i].pitch = read[i].pitch
        pattern[i].randomPitch = read[i].randomPitch
        pattern[i].swing = read[i].swing
+       pattern[i].pan = read[i].pan or 0
        pattern[i].volume = read[i].volume
        pattern[i].values = read[i].values
     end
@@ -62,63 +65,69 @@ function love.filedropped(file)
     pattern.swing = read.swing
     pattern.pitch = read.pitch
     pattern.pitchRandom = read.pitchRandom
+    pattern.bars = read.bars or 32
+    pattern.volume = read.volume or 1
+    pattern.measure = read.measure or 4
 
     updateSliders()
-    print(pattern.bpm)
-
 end
 
 function love.load()
-   love.window.setMode(1024, 768)
+    love.window.setMode(1024, 868)
    font = love.graphics.newFont("futura.ttf", 20)
    love.graphics.setFont(font)
-
+   love.audio.setPosition(0, 1, 0) 
    pattern = {
       -- {name='Clarinet', sound=love.audio.newSource('samples/clarinet_loop_middle.wav', 'static')},
       --{name='Piano', sound=love.audio.newSource('samples/Yamaha-DX7-E-Piano-1-C5.wav', 'static')},
-      {name='CymbalR', url='samples/Cymbal_reversed.wav'},
-      {name='Cymbal', url='samples/Cymbal.wav'},
-      {name='Cowbell', url='samples/Cowbell.wav'},
-      {name='Conga', url='samples/Conga Low.wav'},
-      {name='HiHat accent', url='samples/HiHat Accent.wav'},
-      {name='Bongo High', url='samples/Bongo High.wav'},
-      {name='Bongo Low', url='samples/Bongo Low.wav'},
-      {name='Tamb 1', url='samples/Tamb 1.wav'},
-      {name='Tamb 2', url='samples/Tamb 2.wav'},
-      {name='Conga Low', url='samples/Conga Low.wav'},
-      {name='HiHat Metal', url='samples/HiHat Metal.wav'},
-      {name='HiHat', url='samples/HiHat.wav'},
-      {name='Guiro 1', url='samples/Guiro 1.wav'},
-      {name='Guiro 2', url='samples/Guiro 2.wav'},
-      {name='Snare accent', url='samples/Snare Accent.wav'},
-      {name='Snare', url='samples/Snare.wav'},
-      {name='Rim', url='samples/Rim Shot.wav'},
-      {name='Kick', url='samples/Kick.wav'},
-      {name='Kick accent', url='samples/Kick Accent.wav'},
+      {name='CLAV', url='samples/kr55/KR55CLAV.wav'},
+      {name='donk', url='samples/donk/Donk1.wav'},
+      {name='CHaT', url='samples/kr55/KR55CHAT.wav'},
+      {name='CNGA', url='samples/kr55/KR55CNGA.wav'},
+      {name='bass', url='samples/cr8000/CR8KBASS.wav'},
+      {name='CymbalR', url='samples/cr78/Cymbal_reversed.wav'},
+      {name='Cymbal', url='samples/cr78/Cymbal.wav'},
+      {name='Cowbell', url='samples/cr78/Cowbell.wav'},
+      {name='Conga', url='samples/cr78/Conga Low.wav'},
+      {name='HiHat accent', url='samples/cr78/HiHat Accent.wav'},
+      {name='Bongo High', url='samples/cr78/Bongo High.wav'},
+      {name='Bongo Low', url='samples/cr78/Bongo Low.wav'},
+      {name='Tamb 1', url='samples/cr78/Tamb 1.wav'},
+      {name='Tamb 2', url='samples/cr78/Tamb 2.wav'},
+      {name='Conga Low', url='samples/cr78/Conga Low.wav'},
+      {name='HiHat Metal', url='samples/cr78/HiHat Metal.wav'},
+      {name='HiHat', url='samples/cr78/HiHat.wav'},
+      --{name='Guiro 1', url='samples/cr78/Guiro 1.wav'},
+      --{name='Guiro 2', url='samples/cr78/Guiro 2.wav'},
+      {name='Snare accent', url='samples/cr78/Snare Accent.wav'},
+      {name='Snare', url='samples/cr78/Snare.wav'},
+      {name='Rim', url='samples/cr78/Rim Shot.wav'},
+      {name='Kick', url='samples/cr78/Kick.wav'},
+      {name='Kick accent', url='samples/cr78/Kick Accent.wav'},
       }
 --love.audio.newSource('samples/Conga Low.wav', 'static')
    totalLength = 32
    addBars(pattern, totalLength)
    timers = prepareTimers(pattern)
 
-   pattern.bpm = 300
+   pattern.bpm = 80
+   pattern.volume = 1.0
    pattern.swing = 50
    pattern.pitch = 1.0
+   pattern.pan = 0.0
+   pattern.bars = totalLength
    pattern.pitchRandom = 0
+   pattern.measure = 4
 
    playing = false
 
-   gridMarginTop = 100
-   gridMarginLeft = 110
+   gridMarginTop = 40
+   gridMarginLeft = 24*6
    drawingValue = 1
    cellWidth = 24
    cellHeight = 32
 
    openedInstrument = 0
-   customPitch = 0
-   customSwing = 50
-   customVolume = 1
-   customRandomPitch = 1
 
    updateSliders()
 
@@ -126,29 +135,51 @@ function love.load()
    customVolumeSlider = newSlider(0, 0 ,0, 0, 0, 0, nil, {track="line"})
    customSwingSlider = newSlider(0, 0 ,0, 0, 0, 0, nil, {track="line"})
    customRandomPitchSlider = newSlider(0, 0 ,0, 0, 0, 0, nil, {track="line"})
-
+   customPanSlider = newSlider(0, 0 ,0, 0, 0, 0, nil, {track="line"})
+   
    time = love.timer.getTime( )
+   resolutionTimer = 0
+
+
+   lastMouseDown = nil
 end
 
 function updateSliders()
-    bpmSlider = newSlider(100+gridMarginLeft, 710,
-			 200, pattern.bpm, 0, 1000,
+   local screenH = love.graphics.getHeight( )
+   
+    bpmSlider = newSlider(100+gridMarginLeft,  screenH - cellHeight*2 + cellHeight/2,
+			 200, pattern.bpm, 0, 300,
 			 function(v) pattern.bpm=v end,
 			 {track="line"})
 
-   swingSlider = newSlider(100+gridMarginLeft, 710 + cellHeight,
+   swingSlider = newSlider(100+gridMarginLeft,  screenH - cellHeight*1 + cellHeight/2,
 			 200, pattern.swing, 0, 100,
 			 function(v) pattern.swing=v end,
 			 {track="line"})
 
-   pitchSlider = newSlider(100+gridMarginLeft + 320, 710 ,
+   pitchSlider = newSlider(100+gridMarginLeft + 320,  screenH - cellHeight*2 + cellHeight/2,
 			 200, pattern.pitch, 0, 1.0,
 			 function(v) pattern.pitch=v end,
 			 {track="line"})
 
-   pitchRandomSlider = newSlider(100+gridMarginLeft + 320, 710 + cellHeight ,
+   volumeSlider = newSlider(100+gridMarginLeft + 320, screenH - cellHeight*1 + cellHeight/2,
+			 200, pattern.volume, 0, 1.0,
+			 function(v) pattern.volume=v end,
+			 {track="line"})
+
+
+   pitchRandomSlider = newSlider(100+gridMarginLeft + 320, screenH - cellHeight*2 + cellHeight/2,
 			 200, pattern.pitchRandom, 0, 1.0,
 			 function(v) pattern.pitchRandom=v end,
+			 {track="line"})
+
+   measureSlider = newSlider(gridMarginLeft + 320 + 320, screenH - cellHeight*2 + cellHeight/2,
+			 60, pattern.measure, 1, 4,
+			 function(v) pattern.measure=math.floor(v) end,
+			 {track="line"})
+    barsSlider = newSlider(gridMarginLeft + 320 + 320, screenH - cellHeight*1 + cellHeight/2,
+			 60, pattern.bars, 1, 32,
+			 function(v) pattern.bars=math.floor(v) end,
 			 {track="line"})
 
 end
@@ -171,6 +202,7 @@ function addBars(pattern, count)
       pattern[i].pitch = 1.0
       pattern[i].randomPitch = 0
       pattern[i].swing = 50
+      pattern[i].pan = 0
       for j = 0, count do
          table.insert(pattern[i].values, false)
       end
@@ -187,6 +219,7 @@ function handlePressInGrid(x,y, value)
       end
    end
 end
+
 
 
 
@@ -251,6 +284,9 @@ function love.mousepressed(x, y)
 	 
 	 customRandomPitchSlider =
 	    newSlider(uiX + 600,uiY  ,100, p.randomPitch, 0, 1, func('randomPitch'), {track="line"})
+
+	  customPanSlider =
+	     newSlider(uiX + 600,uiY  ,100, p.pan, -1, 1, func('pan'), {track="line"})
    end
 
 end
@@ -263,6 +299,22 @@ end
 
 
 function love.update(dt)
+
+
+   -- to start out with i need an internal clock kinda thing
+   -- let say we have a resolution of 1/32
+   -- 1/32 of what though?
+   
+   
+   -- all instruments use that resolution, things try to get triggered by it.
+   
+   
+   resolutionTimer = resolutionTimer + dt
+   --print(resolutionTimer, 1.0/32, dt)
+   
+--   print(60/pattern.bpm)
+   
+   local multiplier = (60/(pattern.bpm*4))
    if (playing) then
 
       for i=1, #pattern do
@@ -271,7 +323,7 @@ function love.update(dt)
 	 local timeToAdd = 0
 
 	 if pattern.swing ~= 50 then
-	    timeToAdd = ((pattern.swing-50)/100.0) * (60/pattern.bpm)
+	    timeToAdd = ((pattern.swing-50)/100.0) * multiplier
 
 	    if timers[i].playhead % 2 == 0 then
 	       -- these we add
@@ -281,7 +333,7 @@ function love.update(dt)
 	 end
 
 	 if pattern[i].swing ~= 50 then
-	    timeToAdd = ((pattern[i].swing-50)/100.0) * (60/pattern.bpm)
+	    timeToAdd = ((pattern[i].swing-50)/100.0) * multiplier
 
 	    if timers[i].playhead % 2 == 0 then
 	       -- these we add
@@ -290,14 +342,13 @@ function love.update(dt)
 	    end
 	 end
 
-	 if (timers[i].timeInBeat >= (60/pattern.bpm + timeToAdd)) then
+	 if (timers[i].timeInBeat >= (multiplier + timeToAdd)) then
 	    timers[i].playhead = timers[i].playhead + 1
-	    if (timers[i].playhead > pattern.length) then timers[i].playhead = 1 end
+	    if (timers[i].playhead > pattern.bars) then timers[i].playhead = 1 end
 
 	    if pattern[i].values[timers[i].playhead] then
 	       local sfx = pattern[i].sound:clone()
-	       --print(time -  love.timer.getTime( ))
-	       local tempPitch = 0.000001 -- math.max(pattern.pitch, 0.0000001)
+	       local tempPitch = 0.000001
 
 	       if pitchRandom then
 		  tempPitch = math.max((love.math.random() * pattern.pitchRandom), 0.0000001)
@@ -311,16 +362,22 @@ function love.update(dt)
 	       sfx:setPitch(math.max(p*layerPitch, 0.00001) )
 
 	       -- accents
-	       local volume = 0.8
-	       if timers[i].playhead % 4 == 0 then
-		  volume = volume + 0.2
+	       local volume = 0.6
+	       if (timers[i].playhead-1) % pattern.measure == 0 then
+		  volume = volume + 0.4
 	       end
 
 	       volume = volume * pattern[i].volume
+	       volume = volume * pattern.volume
+	       if pattern[i].muted then
+		  volume = volume * 0
+	       end
+	       
 	       sfx:setVolume(volume)
+	       sfx:setPosition( pattern[i].pan,0, 0 )
 	       sfx:play()
 	    end
-	    timers[i].timeInBeat = timers[i].timeInBeat - (60/pattern.bpm + timeToAdd)
+	    timers[i].timeInBeat = timers[i].timeInBeat - (multiplier + timeToAdd)
 	 end
 
       end
@@ -333,13 +390,44 @@ function love.update(dt)
    bpmSlider:update()
    swingSlider:update()
    pitchSlider:update()
+   volumeSlider:update()
+   measureSlider:update()
+   barsSlider:update()
    pitchRandomSlider:update()
    customPitchSlider:update()
    customSwingSlider:update()
    customVolumeSlider:update()
    customRandomPitchSlider:update()
+   customPanSlider:update()
 end
 
+function pointInRect(x,y, rx, ry, rw, rh)
+   if x < rx or y < ry then return false end
+   if x > rx+rw or y > ry+rh then return false end
+   return true
+end
+function draw_button(x,y,p, run)
+   --print(inspect(p), inspect(p2))
+   local result= false
+   if not p then
+      love.graphics.rectangle('fill',x,y,cellWidth,cellHeight )
+   else
+      love.graphics.rectangle('line',x,y,cellWidth,cellHeight )
+
+   end
+   
+
+   if run then
+      local mx, my = love.mouse.getPosition( )
+      if pointInRect(mx,my, x,y,cellWidth,cellHeight) then
+	 result = true
+      end
+   end
+   
+   return {
+      clicked=result
+   }
+end
 
 function love.draw()
 
@@ -347,14 +435,43 @@ function love.draw()
    love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider)
    love.graphics.setLineWidth( 2)
 
-
+   local mouseDown = love.mouse.isDown(1 )
+   local run = false
+   if mouseDown ~= lastMouseDown then
+      if mouseDown then
+	 run = true
+      end
+   end
+   lastMouseDown = mouseDown
+   
    for i =1, #pattern do
 
+      if draw_button(4,gridMarginTop + (i-1) * cellHeight,pattern[i].muted,run ).clicked then
+	 pattern[i].muted = not pattern[i].muted
+      end
+      
 
-      love.graphics.print(pattern[i].name,  20, gridMarginTop + (i-1) * cellHeight)
-      love.graphics.rectangle('line',20,  gridMarginTop + (i-1)*cellHeight, gridMarginLeft-20, cellHeight )
+      
+      love.graphics.print(pattern[i].name,  40, gridMarginTop + (i-1) * cellHeight)
+      love.graphics.rectangle('line',40,  gridMarginTop + (i-1)*cellHeight, 90, cellHeight )
       --we assume some width is enough to fit all the names say 100
+
       for j=1, #(pattern[i].values)-1 do
+	 
+	 
+	 if ((j-1) %  pattern.measure == 0) then -- show a thicker line at measures
+	    --print(j % 4, j)
+	    love.graphics.line(gridMarginLeft + (j-1)*cellWidth,
+			       gridMarginTop ,
+			       gridMarginLeft + (j-1)*cellWidth,
+			       gridMarginTop + (#pattern)*cellHeight
+			       
+	    )
+	 end
+	 love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider, 1.0)
+	 if (j>pattern.bars or pattern[i].muted) then
+	    love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider, 0.5)
+	 end
 	 if (pattern[i].values[j]) then
     	    love.graphics.rectangle('fill',
 				    gridMarginLeft + (j-1)*cellWidth,
@@ -367,6 +484,7 @@ function love.draw()
 				    cellWidth, cellHeight )
     	 end
       end
+      love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider, 1.0)
 
    end
 
@@ -386,6 +504,10 @@ function love.draw()
       customSwingSlider:draw()
       love.graphics.print('volume: '.. p.volume, gridMarginLeft+ 400,  ty)
       customVolumeSlider:draw()
+      love.graphics.print('pan: '.. p.pan, gridMarginLeft+ 600,  ty)
+      customPanSlider:draw()
+
+
       --love.graphics.print('rnd: '.. pattern[openedInstrument].randomPitch, gridMarginLeft+ 600,  gridMarginTop + (openedInstrument-1)*cellHeight)
 
 
@@ -409,12 +531,21 @@ function love.draw()
    love.graphics.setColor(0, 0, 0)
 
    -- draw slider, set color and line style before calling
-    love.graphics.print('bpm: '..pattern.bpm, 20, 700)
+   local screenH = love.graphics.getHeight( )
+   
+    love.graphics.print('bpm: '..pattern.bpm, 20, screenH - cellHeight*2)
     bpmSlider:draw()
-    love.graphics.print('swing: '..pattern.swing, 20, 700+cellHeight)
+    love.graphics.print('swing: '..pattern.swing, 20,screenH - cellHeight*1)
     swingSlider:draw()
-    love.graphics.print('pitch: '..pattern.pitch, 20 + 320, 700)
+    love.graphics.print('pitch: '..pattern.pitch, 20 + 320, screenH - cellHeight*2)
     pitchSlider:draw()
+    love.graphics.print('volume: '..pattern.volume, 20 + 320, screenH - cellHeight*1)
+    volumeSlider:draw()
+    love.graphics.print('measure: '.. pattern.measure, 20 + 320 + 320,  screenH - cellHeight*2)
+    measureSlider:draw()
+     love.graphics.print('bars: '.. pattern.bars, 20 + 320 + 320,  screenH - cellHeight*1)
+      barsSlider:draw()
+
     --love.graphics.print('pitch-rnd: '..pattern.pitchRandom, 20 + 320, 700 + cellHeight)
     --pitchRandomSlider:draw()
     count = love.audio.getActiveSourceCount( )
