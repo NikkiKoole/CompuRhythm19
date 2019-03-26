@@ -1,7 +1,7 @@
 inspect = require "inspect"
 require 'simple-slider'
 
-colorDivider = 255
+colorDivider = 1.0
 
 
 function copy(obj, seen, ignore)
@@ -78,6 +78,8 @@ function love.load()
    pattern = {
       -- {name='Clarinet', sound=love.audio.newSource('samples/clarinet_loop_middle.wav', 'static')},
       --{name='Piano', sound=love.audio.newSource('samples/Yamaha-DX7-E-Piano-1-C5.wav', 'static')},
+      {name='donk1', url='samples/donk/Donk1.wav'},
+      {name='donk5', url='samples/donk/Donk5.wav'},
       {name='Cymbal', url='samples/Cymbal.wav'},
       {name='Cowbell', url='samples/Cowbell.wav'},
       {name='Conga', url='samples/Conga Low.wav'},
