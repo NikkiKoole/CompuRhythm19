@@ -142,6 +142,9 @@ function love.load()
 
 
    lastMouseDown = nil
+   lastDraggedElement = nil
+   rotateValue = {min=10, max=1000, value=0}
+   
 end
 
 function updateSliders()
@@ -234,11 +237,17 @@ function getRowAndIndex(x,y)
    index = math.min(pattern.length , index)
    return row, index
 end
+function love.mousereleased(x, y)
+   lastDraggedElement = nil
+end
 
 
 function love.mousepressed(x, y)
    -- figure out if changing the cell under me means deleting r adding
    -- do that for all the cells touched by the subsequent move
+
+   if lastDraggedElement then return end
+
    local row, index = getRowAndIndex(x,y)
 
    if openedInstrument == 0 then
@@ -292,7 +301,7 @@ function love.mousepressed(x, y)
 end
 function love.mousemoved(x,y)
    local down = love.mouse.isDown( 1)
-   if down and openedInstrument == 0 then
+   if down and openedInstrument == 0 and not lastDraggedElement then
       handlePressInGrid(x,y, drawingValue)
    end
 end
@@ -386,14 +395,14 @@ function love.update(dt)
 
 
 
-   bpmSlider:update()
+   --bpmSlider:update()
    swingSlider:update()
-   pitchSlider:update()
+   --pitchSlider:update()
    volumeSlider:update()
    measureSlider:update()
    barsSlider:update()
    pitchRandomSlider:update()
-   customPitchSlider:update()
+   --customPitchSlider:update()
    customSwingSlider:update()
    customVolumeSlider:update()
    customRandomPitchSlider:update()
@@ -404,6 +413,21 @@ function pointInRect(x,y, rx, ry, rw, rh)
    if x < rx or y < ry then return false end
    if x > rx+rw or y > ry+rh then return false end
    return true
+end
+function distance(x, y, x1, y1)
+   local dx = x - x1
+   local dy = y - y1
+   local dist = math.sqrt(dx * dx + dy * dy)
+   return dist
+end
+
+function pointInCircle(x,y, cx, cy, radius)
+   
+   if distance(x,y,cx,cy) < radius then
+      return true
+   else
+      return false
+   end
 end
 function draw_button(x,y,p, run)
    --print(inspect(p), inspect(p2))
@@ -427,8 +451,92 @@ function draw_button(x,y,p, run)
    }
 end
 
-function love.draw()
 
+function angle(x1,y1, x2, y2)
+   local dx = x2 - x1
+   local dy = y2 - y1
+   return math.atan2(dx,dy)
+end
+function angleAtDistance(x,y,angle, distance)
+   local px = math.cos( angle ) * distance
+   local py = math.sin( angle ) * distance
+   return px, py
+end
+function lerp(a, b, t)
+	return a + (b - a) * t
+end
+
+
+function mapInto(x, in_min, in_max, out_min, out_max)
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+end
+
+function draw_knob(id, x,y, v, min, max, run)
+   local result = nil
+   love.graphics.setColor(0, 0, 0)
+   love.graphics.circle("fill", x, y, cellHeight/2, 100) -- Draw white circle with 100 segments.
+  
+   love.graphics.setColor(1, 1, 1)
+   local mx, my = love.mouse.getPosition( )
+
+   a = -math.pi/2 
+   ax, ay = angleAtDistance(x,y,-a, cellHeight/2)
+   bx, by = angleAtDistance(x,y,-a, cellHeight/4)
+   love.graphics.setColor(1, 1, 1, 0.5)
+   love.graphics.line(x+ax,y+ay,x+bx,y+by)
+   love.graphics.setColor(1, 1, 1, 1)
+
+   a = mapInto(v, min, max, 0 + math.pi/2, math.pi*2 + math.pi/2)
+   ax, ay = angleAtDistance(x,y,a, cellHeight/2)
+   bx, by = angleAtDistance(x,y,a, cellHeight/4)
+   love.graphics.setColor(1, 1, 1)
+   love.graphics.line(x+ax,y+ay,x+bx,y+by)
+   love.graphics.setColor(1, 1, 1)
+   
+   if run then
+      local mx, my = love.mouse.getPosition( )
+      -- click to start dragging
+      if pointInCircle(mx,my, x,y,cellHeight/2) then
+	 lastDraggedElement = {id=id, initialAngle=angle(mx, my, x, y), rolling=0}
+      end
+   end
+   
+   if love.mouse.isDown(1 ) then
+      if lastDraggedElement and lastDraggedElement.id == id then
+	 local mx, my = love.mouse.getPosition( )
+	 local a = angle(mx, my, x, y)
+	 --print(a)
+	 --if a ~=  lastDraggedElement.rolling then
+	 result = mapInto(a, math.pi, -math.pi, min, max)
+	 
+	 if a ~= lastDraggedElement.rolling then
+	    --print(a, v)
+	    lastDraggedElement.rolling = a
+	 else
+	    
+	    result = nil
+	 end
+	 
+	 --end
+
+	 
+	 
+	 
+	 
+	 love.graphics.line(mx,my,x,y)
+
+      end
+   end
+   
+   return {
+      value=result
+   }
+end
+
+
+function love.draw()
+   local screenH = love.graphics.getHeight( )
+   local screenW = love.graphics.getWidth( )
    love.graphics.clear(255/colorDivider, 198/colorDivider, 49/colorDivider)
    love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider)
    love.graphics.setLineWidth( 2)
@@ -497,7 +605,12 @@ function love.draw()
 				    2 + cellWidth * totalLength , 2+ cellHeight )
       love.graphics.setColor(0/colorDivider,0/colorDivider,0/colorDivider)
       love.graphics.print('pitch: '.. p.pitch, gridMarginLeft,  ty)
-      customPitchSlider:draw()
+      local pitchknob =  draw_knob('pitch', screenW/2, screenH/2,p.pitch, 0, 1, run )
+      if pitchknob.value then
+	 p.pitch = pitchknob.value
+	 -- print( rotateValue.value)
+      end
+      --customPitchSlider:draw()
       love.graphics.print('swing: '.. p.swing, gridMarginLeft+ 200,  ty)
       customSwingSlider:draw()
       love.graphics.print('volume: '.. p.volume, gridMarginLeft+ 400,  ty)
@@ -529,21 +642,36 @@ function love.draw()
    love.graphics.setColor(0, 0, 0)
 
    -- draw slider, set color and line style before calling
-   local screenH = love.graphics.getHeight( )
+  
    
-    love.graphics.print('bpm: '..pattern.bpm, 20, screenH - cellHeight*2)
-    bpmSlider:draw()
+   
+    love.graphics.print('bpm: '..string.format("%.2f", pattern.bpm) , 20, screenH - cellHeight*2)
+    --bpmSlider:draw()
     love.graphics.print('swing: '..pattern.swing, 20,screenH - cellHeight*1)
     swingSlider:draw()
     love.graphics.print('pitch: '..pattern.pitch, 20 + 320, screenH - cellHeight*2)
-    pitchSlider:draw()
+    --pitchSlider:draw()
     love.graphics.print('volume: '..pattern.volume, 20 + 320, screenH - cellHeight*1)
     volumeSlider:draw()
     love.graphics.print('measure: '.. pattern.measure, 20 + 320 + 320,  screenH - cellHeight*2)
     measureSlider:draw()
-     love.graphics.print('bars: '.. pattern.bars, 20 + 320 + 320,  screenH - cellHeight*1)
-      barsSlider:draw()
+    love.graphics.print('bars: '.. pattern.bars, 20 + 320 + 320,  screenH - cellHeight*1)
+    barsSlider:draw()
 
+    local pitchknob =  draw_knob('pitch', 300, screenH - cellHeight*2,pattern.pitch, 0, 1, run )
+    if pitchknob.value then
+      pattern.pitch = pitchknob.value
+      -- print( rotateValue.value)
+    end
+
+    
+    local knob =  draw_knob('bpm', 100, screenH - cellHeight*2,pattern.bpm, 0, 300, run )
+    if knob.value then
+       --print("knob.value", knob.value)
+      pattern.bpm = knob.value
+      -- print( rotateValue.value)
+    end
+    
     --love.graphics.print('pitch-rnd: '..pattern.pitchRandom, 20 + 320, 700 + cellHeight)
     --pitchRandomSlider:draw()
     count = love.audio.getActiveSourceCount( )
