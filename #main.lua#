@@ -644,7 +644,7 @@ function love.draw()
 
    -- draw slider, set color and line style before calling
     love.graphics.print('bpm: '..string.format("%.2f", pattern.bpm) , 20, screenH - cellHeight*2)
-    love.graphics.print('swing: '..pattern.swing, 20,screenH - cellHeight*1)
+xs    love.graphics.print('swing: '..pattern.swing, 20,screenH - cellHeight*1)
     swingSlider:draw()
     love.graphics.print('pitch: '..pattern.pitch, 20 + 320, screenH - cellHeight*2)
     --pitchSlider:draw()
