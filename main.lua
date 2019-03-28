@@ -606,7 +606,7 @@ function love.draw()
 				    2 + cellWidth * totalLength , 2+ cellHeight )
       love.graphics.setColor(0/colorDivider,0/colorDivider,0/colorDivider)
       love.graphics.print('pitch: '.. p.pitch, gridMarginLeft,  ty)
-      local pitchknob =  draw_knob('pitch', screenW/2, screenH/2,p.pitch, 0, 1, run )
+      local pitchknob =  draw_knob('my-pitch', screenW/2, screenH/2,p.pitch, 0, 1, run )
       if pitchknob.value then
 	 p.pitch = pitchknob.value
 	 -- print( rotateValue.value)
