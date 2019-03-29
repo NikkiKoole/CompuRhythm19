@@ -5,17 +5,17 @@ colorDivider = 255
 
 
 function copy(obj, seen, ignore)
-  if type(obj) ~= 'table' then return obj end
-  if seen and seen[obj] then return seen[obj] end
-  local s = seen or {}
-  local res = setmetatable({}, getmetatable(obj))
-  s[obj] = res
-  for k, v in pairs(obj) do
-     if k ~= ignore then
-        res[copy(k, s, ignore)] = copy(v, s, ignore)
-     end
-  end
-  return res
+   if type(obj) ~= 'table' then return obj end
+   if seen and seen[obj] then return seen[obj] end
+   local s = seen or {}
+   local res = setmetatable({}, getmetatable(obj))
+   s[obj] = res
+   for k, v in pairs(obj) do
+      if k ~= ignore then
+         res[copy(k, s, ignore)] = copy(v, s, ignore)
+      end
+   end
+   return res
 end
 
 
@@ -37,55 +37,56 @@ function love.keypressed(key)
 end
 
 function love.filedropped(file)
-    --local data = file:read()
-    local read = loadstring("return ".. file:read())()
-    addBars(pattern, totalLength)
-    timers = prepareTimers(pattern)
+   --local data = file:read()
+   local read = loadstring("return ".. file:read())()
+   addBars(pattern, totalLength)
+   timers = prepareTimers(pattern)
 
-    pattern = {}
-    for i=1, #read do
-       pattern[i] = {}
-       pattern[i].name = read[i].name
-       pattern[i].url = read[i].url
-    end
-    addBars(pattern, read.length)
-    timers = prepareTimers(pattern)
-    for i=1, #read do
-       pattern[i].muted = read[i].muted
-       pattern[i].pitch = read[i].pitch
-       pattern[i].randomPitch = read[i].randomPitch
-       pattern[i].swing = read[i].swing
-       pattern[i].pan = read[i].pan or 0
-       pattern[i].volume = read[i].volume
-       pattern[i].values = read[i].values
-    end
+   pattern = {}
+   for i=1, #read do
+      pattern[i] = {}
+      pattern[i].name = read[i].name
+      pattern[i].url = read[i].url
+   end
+   addBars(pattern, read.length)
+   timers = prepareTimers(pattern)
+   for i=1, #read do
+      pattern[i].muted = read[i].muted
+      pattern[i].pitch = read[i].pitch
+      pattern[i].randomPitch = read[i].randomPitch
+      pattern[i].swing = read[i].swing
+      pattern[i].pan = read[i].pan or 0
+      pattern[i].volume = read[i].volume
+      pattern[i].values = read[i].values
+   end
 
-    pattern.length = read.length
-    pattern.bpm = read.bpm
-    pattern.swing = read.swing
-    pattern.pitch = read.pitch
-    pattern.pitchRandom = read.pitchRandom
-    pattern.bars = read.bars or 32
-    pattern.volume = read.volume or 1
-    pattern.measure = read.measure or 4
+   pattern.length = read.length
+   pattern.bpm = read.bpm
+   pattern.swing = read.swing
+   pattern.pitch = read.pitch
+   pattern.pitchRandom = read.pitchRandom
+   pattern.bars = read.bars or 32
+   pattern.volume = read.volume or 1
+   pattern.measure = read.measure or 4
 
-    updateSliders()
+   updateSliders()
 end
 
 function love.load()
-    love.window.setMode(1024, 868)
+   love.window.setMode(1024, 868)
    font = love.graphics.newFont("futura.ttf", 20)
    love.graphics.setFont(font)
    love.audio.setPosition(0, 1, 0)
    pattern = {
-      {name='bd', url='samples/TR808WAV/BD/BD1010.wav'},
-      {name='bd', url='samples/TR808WAV/BD/BD1050.wav'},
-      {name='bd', url='samples/tr606/01bd.wav'},
-      {name='sd', url='samples/tr606/02sd.wav'},
-      {name='ch', url='samples/tr606/03ch.wav'},
-      {name='CLAV', url='samples/kr55/KR55CLAV.wav'},
-      {name='donk', url='samples/donk/Donk1.wav'},
-      {name='donk', url='samples/donk/Donk2.wav'},
+      -- {name='bd', url='samples/TR808WAV/BD/BD1010.wav'},
+      -- {name='bd', url='samples/TR808WAV/BD/BD1050.wav'},
+      -- {name='bd', url='samples/tr606/01bd.wav'},
+      -- {name='sd', url='samples/tr606/02sd.wav'},
+      -- {name='ch', url='samples/tr606/03ch.wav'},
+      -- {name='CLAV', url='samples/kr55/KR55CLAV.wav'},
+      -- {name='donk', url='samples/donk/Donk1.wav'},
+      -- {name='donk', url='samples/donk/Donk2.wav'},
+      {name='clarinet', url='samples/timbres/clarinet_loop_middle.wav'},
       {name='donk', url='samples/donk/Donk3.wav'},
       {name='CHaT', url='samples/kr55/KR55CHAT.wav'},
       {name='CNGA', url='samples/kr55/KR55CNGA.wav'},
@@ -149,46 +150,46 @@ function love.load()
    lastMouseDown = nil
    lastDraggedElement = nil
    rotateValue = {min=10, max=1000, value=0}
-   
+
 end
 
 function updateSliders()
    local screenH = love.graphics.getHeight( )
 
-    bpmSlider = newSlider(100+gridMarginLeft,  screenH - cellHeight*2 + cellHeight/2,
-			 200, pattern.bpm, 0, 300,
-			 function(v) pattern.bpm=v end,
-			 {track="line"})
+   bpmSlider = newSlider(100+gridMarginLeft,  screenH - cellHeight*2 + cellHeight/2,
+                         200, pattern.bpm, 0, 300,
+                         function(v) pattern.bpm=v end,
+                         {track="line"})
 
    swingSlider = newSlider(100+gridMarginLeft,  screenH - cellHeight*1 + cellHeight/2,
-			 200, pattern.swing, 0, 100,
-			 function(v) pattern.swing=v end,
-			 {track="line"})
+                           200, pattern.swing, 50, 100,
+                           function(v) pattern.swing=v end,
+                           {track="line"})
 
    pitchSlider = newSlider(100+gridMarginLeft + 320,  screenH - cellHeight*2 + cellHeight/2,
-			 200, pattern.pitch, 0, 1.0,
-			 function(v) pattern.pitch=v end,
-			 {track="line"})
+                           200, pattern.pitch, 0, 1.0,
+                           function(v) pattern.pitch=v end,
+                           {track="line"})
 
    volumeSlider = newSlider(100+gridMarginLeft + 320, screenH - cellHeight*1 + cellHeight/2,
-			 200, pattern.volume, 0, 1.0,
-			 function(v) pattern.volume=v end,
-			 {track="line"})
+                            200, pattern.volume, 0, 1.0,
+                            function(v) pattern.volume=v end,
+                            {track="line"})
 
 
    pitchRandomSlider = newSlider(100+gridMarginLeft + 320, screenH - cellHeight*2 + cellHeight/2,
-			 200, pattern.pitchRandom, 0, 1.0,
-			 function(v) pattern.pitchRandom=v end,
-			 {track="line"})
+                                 200, pattern.pitchRandom, 0, 1.0,
+                                 function(v) pattern.pitchRandom=v end,
+                                 {track="line"})
 
    measureSlider = newSlider(gridMarginLeft + 320 + 320, screenH - cellHeight*2 + cellHeight/2,
-			 60, pattern.measure, 1, 4,
-			 function(v) pattern.measure=math.floor(v) end,
-			 {track="line"})
-    barsSlider = newSlider(gridMarginLeft + 320 + 320, screenH - cellHeight*1 + cellHeight/2,
-			 60, pattern.bars, 1, 32,
-			 function(v) pattern.bars=math.floor(v) end,
-			 {track="line"})
+                             60, pattern.measure, 1, 4,
+                             function(v) pattern.measure=math.floor(v) end,
+                             {track="line"})
+   barsSlider = newSlider(gridMarginLeft + 320 + 320, screenH - cellHeight*1 + cellHeight/2,
+                          60, pattern.bars, 1, 32,
+                          function(v) pattern.bars=math.floor(v) end,
+                          {track="line"})
 
 end
 function prepareTimers(pattern)
@@ -221,9 +222,9 @@ function handlePressInGrid(x,y, value)
    local row, index = getRowAndIndex(x,y)
    if row > -1 and index > -1 then
       if value ~= nil then
-	 pattern[row].values[index] = value
+         pattern[row].values[index] = value
       else
-	 pattern[row].values[index] = not pattern[row].values[index]
+         pattern[row].values[index] = not pattern[row].values[index]
       end
    end
 end
@@ -256,48 +257,48 @@ function love.mousepressed(x, y)
    local row, index = getRowAndIndex(x,y)
 
    if openedInstrument == 0 then
-   if row > -1 and index > -1 then
-      local value = pattern[row].values[index]
-      drawingValue = not value
-      handlePressInGrid(x,y, drawingValue)
-   end
+      if row > -1 and index > -1 then
+         local value = pattern[row].values[index]
+         drawingValue = not value
+         handlePressInGrid(x,y, drawingValue)
+      end
    end
 
    if (x > 20 and x < gridMarginLeft) and
-      (y > gridMarginTop and y < gridMarginTop  + cellHeight* #pattern) then
-	 local lx = x
-	 local ly = y - gridMarginTop
-	 local index = math.floor(ly / cellHeight) + 1
+   (y > gridMarginTop and y < gridMarginTop  + cellHeight* #pattern) then
+      local lx = x
+      local ly = y - gridMarginTop
+      local index = math.floor(ly / cellHeight) + 1
 
-	 if openedInstrument == index then
-	    openedInstrument = 0
-	 else
-	    openedInstrument = index
-	 end
+      if openedInstrument == index then
+         openedInstrument = 0
+      else
+         openedInstrument = index
+      end
 
-	 local uiY = index * cellHeight + gridMarginTop - 20
-	 local uiX = gridMarginLeft + 130
-	 local p = pattern[index]
-	 local func = function(name)
-	    return function(v)
-	       if openedInstrument > 0 then
-		  pattern[openedInstrument][name] = v
-	       end
-	       --prop=v
-	    end
-	 end
+      local uiY = index * cellHeight + gridMarginTop - 20
+      local uiX = gridMarginLeft + 130
+      local p = pattern[index]
+      local func = function(name)
+         return function(v)
+            if openedInstrument > 0 then
+               pattern[openedInstrument][name] = v
+            end
+            --prop=v
+         end
+      end
 
-	 customPitchSlider =
-	    newSlider(uiX, uiY, 100, p.pitch, 0, 1.0,func('pitch'), {track="line"})
+      customPitchSlider =
+         newSlider(uiX, uiY, 100, p.pitch, 0, 1.0,func('pitch'), {track="line"})
 
-	 customSwingSlider =
-	    newSlider(uiX + 200,uiY , 100, p.swing, 0, 100,func('swing'),{track="line"})
+      customSwingSlider =
+         newSlider(uiX + 200,uiY , 100, p.swing, 0, 100,func('swing'),{track="line"})
 
-	 customVolumeSlider =
-	    newSlider(uiX + 400,uiY , 100, p.volume, 0, 1, func('volume'), {track="line"})
+      customVolumeSlider =
+         newSlider(uiX + 400,uiY , 100, p.volume, 0, 1, func('volume'), {track="line"})
 
-	 customRandomPitchSlider =
-	    newSlider(uiX + 600,uiY  ,100, p.randomPitch, 0, 1, func('randomPitch'), {track="line"})
+      customRandomPitchSlider =
+         newSlider(uiX + 600,uiY  ,100, p.randomPitch, 0, 1, func('randomPitch'), {track="line"})
 
 	  customPanSlider =
 	     newSlider(uiX + 600,uiY  ,100, p.pan, -1, 1, func('pan'), {track="line"})
@@ -325,73 +326,76 @@ function love.update(dt)
 
    resolutionTimer = resolutionTimer + dt
    --print(resolutionTimer, 1.0/32, dt)
---   print(60/pattern.bpm)
+   --   print(60/pattern.bpm)
 
    local multiplier = (60/(pattern.bpm*4))
+
+
    if (playing) then
 
       for i=1, #pattern do
-	 timers[i].timeInBeat = timers[i].timeInBeat + dt
+         timers[i].timeInBeat = timers[i].timeInBeat + dt
 
-	 local timeToAdd = 0
+         local timeToAdd = 0
 
-	 if pattern.swing ~= 50 then
-	    timeToAdd = ((pattern.swing-50)/100.0) * multiplier
+         if pattern.swing ~= 50 then
+            timeToAdd = ((pattern.swing-50)/50.0) * multiplier
 
-	    if timers[i].playhead % 2 == 0 then
-	       -- these we add
-	    elseif  timers[i].playhead % 2 == 1 then
-	       timeToAdd = timeToAdd * -1
-	    end
-	 end
+            if timers[i].playhead % 2 == 0 then
+               -- these we add
+            elseif  timers[i].playhead % 2 == 1 then
+               timeToAdd = timeToAdd * -1
+               print(pattern.swing, 'odd cell', timeToAdd, multiplier)
+            end
+         end
 
-	 if pattern[i].swing ~= 50 then
-	    timeToAdd = ((pattern[i].swing-50)/100.0) * multiplier
+         if pattern[i].swing ~= 50 then
+            timeToAdd = ((pattern[i].swing-50)/100.0) * multiplier
 
-	    if timers[i].playhead % 2 == 0 then
-	       -- these we add
-	    elseif  timers[i].playhead % 2 == 1 then
-	       timeToAdd = timeToAdd * -1
-	    end
-	 end
+            if timers[i].playhead % 2 == 0 then
+               -- these we add
+            elseif  timers[i].playhead % 2 == 1 then
+               timeToAdd = timeToAdd * -1
+            end
+         end
 
-	 if (timers[i].timeInBeat >= (multiplier + timeToAdd)) then
-	    timers[i].playhead = timers[i].playhead + 1
-	    if (timers[i].playhead > pattern.bars) then timers[i].playhead = 1 end
+         if (timers[i].timeInBeat >= (multiplier + timeToAdd)) then
+            timers[i].playhead = timers[i].playhead + 1
+            if (timers[i].playhead > pattern.bars) then timers[i].playhead = 1 end
 
-	    if pattern[i].values[timers[i].playhead] then
-	       local sfx = pattern[i].sound:clone()
-	       local tempPitch = 0.000001
+            if pattern[i].values[timers[i].playhead] then
+               local sfx = pattern[i].sound:clone()
+               local tempPitch = 0.000001
 
-	       if pitchRandom then
-		  tempPitch = math.max((love.math.random() * pattern.pitchRandom), 0.0000001)
-		  if (love.math.random() > 0.5 ) then
-		     tempPitch = tempPitch * -1
-		  end
-	       end
+               if pitchRandom then
+                  tempPitch = math.max((love.math.random() * pattern.pitchRandom), 0.0000001)
+                  if (love.math.random() > 0.5 ) then
+                     tempPitch = tempPitch * -1
+                  end
+               end
 
-	       local p = math.max(pattern.pitch + (tempPitch*pattern.pitch), 0)
-	       local layerPitch = pattern[i].pitch
-	       sfx:setPitch(math.max(p*layerPitch, 0.00001) )
+               local p = math.max(pattern.pitch + (tempPitch*pattern.pitch), 0)
+               local layerPitch = pattern[i].pitch
+               sfx:setPitch(math.max(p*layerPitch, 0.00001) )
 
-	       -- accents
-	       local volume = 0.6
-	       if (timers[i].playhead-1) % pattern.measure == 0 then
-		  volume = volume + 0.4
-	       end
+               -- accents
+               local volume = 0.6
+               if (timers[i].playhead-1) % pattern.measure == 0 then
+                  volume = volume + 0.4
+               end
 
-	       volume = volume * pattern[i].volume
-	       volume = volume * pattern.volume
-	       if pattern[i].muted then
-		  volume = volume * 0
-	       end
+               volume = volume * pattern[i].volume
+               volume = volume * pattern.volume
+               if pattern[i].muted then
+                  volume = volume * 0
+               end
 
-	       sfx:setVolume(volume)
-	       sfx:setPosition( pattern[i].pan,0, 0 )
-	       sfx:play()
-	    end
-	    timers[i].timeInBeat = timers[i].timeInBeat - (multiplier + timeToAdd)
-	 end
+               sfx:setVolume(volume)
+               sfx:setPosition( pattern[i].pan,0, 0 )
+               sfx:play()
+            end
+            timers[i].timeInBeat = timers[i].timeInBeat - (multiplier + timeToAdd)
+         end
 
       end
 
@@ -400,14 +404,11 @@ function love.update(dt)
 
 
 
-   --bpmSlider:update()
    swingSlider:update()
-   --pitchSlider:update()
    volumeSlider:update()
    measureSlider:update()
    barsSlider:update()
    pitchRandomSlider:update()
-   --customPitchSlider:update()
    customSwingSlider:update()
    customVolumeSlider:update()
    customRandomPitchSlider:update()
@@ -427,7 +428,7 @@ function distance(x, y, x1, y1)
 end
 
 function pointInCircle(x,y, cx, cy, radius)
-   
+
    if distance(x,y,cx,cy) < radius then
       return true
    else
@@ -447,7 +448,7 @@ function draw_button(x,y,p, run)
    if run then
       local mx, my = love.mouse.getPosition( )
       if pointInRect(mx,my, x,y,cellWidth,cellHeight) then
-	 result = true
+         result = true
       end
    end
 
@@ -468,23 +469,23 @@ function angleAtDistance(x,y,angle, distance)
    return px, py
 end
 function lerp(a, b, t)
-	return a + (b - a) * t
+   return a + (b - a) * t
 end
 
 
 function mapInto(x, in_min, in_max, out_min, out_max)
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 end
 
 function draw_knob(id, x,y, v, min, max, run)
    local result = nil
    love.graphics.setColor(0, 0, 0)
    love.graphics.circle("fill", x, y, cellHeight/2, 100) -- Draw white circle with 100 segments.
-  
+
    love.graphics.setColor(1, 1, 1)
    local mx, my = love.mouse.getPosition( )
 
-   a = -math.pi/2 
+   a = -math.pi/2
    ax, ay = angleAtDistance(x,y,-a, cellHeight/2)
    bx, by = angleAtDistance(x,y,-a, cellHeight/4)
    love.graphics.setColor(1, 1, 1, 0.5)
@@ -497,42 +498,42 @@ function draw_knob(id, x,y, v, min, max, run)
    love.graphics.setColor(1, 1, 1)
    love.graphics.line(x+ax,y+ay,x+bx,y+by)
    love.graphics.setColor(1, 1, 1)
-   
+
    if run then
       local mx, my = love.mouse.getPosition( )
       -- click to start dragging
       if pointInCircle(mx,my, x,y,cellHeight/2) then
-	 lastDraggedElement = {id=id, initialAngle=angle(mx, my, x, y), rolling=0}
+         lastDraggedElement = {id=id, initialAngle=angle(mx, my, x, y), rolling=0}
       end
    end
-   
+
    if love.mouse.isDown(1 ) then
       if lastDraggedElement and lastDraggedElement.id == id then
-	 local mx, my = love.mouse.getPosition( )
-	 local a = angle(mx, my, x, y)
-	 --print(a)
-	 --if a ~=  lastDraggedElement.rolling then
-	 result = mapInto(a, math.pi, -math.pi, min, max)
-	 
-	 if a ~= lastDraggedElement.rolling then
-	    --print(a, v)
-	    lastDraggedElement.rolling = a
-	 else
-	    
-	    result = nil
-	 end
-	 
-	 --end
+         local mx, my = love.mouse.getPosition( )
+         local a = angle(mx, my, x, y)
+         --print(a)
+         --if a ~=  lastDraggedElement.rolling then
+         result = mapInto(a, math.pi, -math.pi, min, max)
 
-	 
-	 
-	 
-	 
-	 love.graphics.line(mx,my,x,y)
+         if a ~= lastDraggedElement.rolling then
+            --print(a, v)
+            lastDraggedElement.rolling = a
+         else
+
+            result = nil
+         end
+
+         --end
+
+
+
+
+
+         love.graphics.line(mx,my,x,y)
 
       end
    end
-   
+
    return {
       value=result
    }
@@ -550,7 +551,7 @@ function love.draw()
    local run = false
    if mouseDown ~= lastMouseDown then
       if mouseDown then
-	 run = true
+         run = true
       end
    end
    lastMouseDown = mouseDown
@@ -558,7 +559,7 @@ function love.draw()
    for i =1, #pattern do
 
       if draw_button(4,gridMarginTop + (i-1) * cellHeight,pattern[i].muted,run ).clicked then
-	 pattern[i].muted = not pattern[i].muted
+         pattern[i].muted = not pattern[i].muted
       end
 
 
@@ -570,29 +571,29 @@ function love.draw()
       for j=1, #(pattern[i].values)-1 do
 
 
-	 if (j %  pattern.measure == 0) then -- show a thicker line at measures
-	    --print(j % 4, j)
-	    love.graphics.line(gridMarginLeft + (j)*cellWidth,
-			       gridMarginTop ,
-			       gridMarginLeft + (j)*cellWidth,
-			       gridMarginTop + (#pattern)*cellHeight
+         if (j %  pattern.measure == 0) then -- show a thicker line at measures
+            --print(j % 4, j)
+            love.graphics.line(gridMarginLeft + (j)*cellWidth,
+                               gridMarginTop ,
+                               gridMarginLeft + (j)*cellWidth,
+                               gridMarginTop + (#pattern)*cellHeight
 
-	    )
-	 end
-	 love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider, 1.0)
-	 if (j>pattern.bars or pattern[i].muted) then
-	    love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider, 0.5)
-	 end
-	 if (pattern[i].values[j]) then
+            )
+         end
+         love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider, 1.0)
+         if (j>pattern.bars or pattern[i].muted) then
+            love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider, 0.5)
+         end
+         if (pattern[i].values[j]) then
     	    love.graphics.rectangle('fill',
-				    gridMarginLeft + (j-1)*cellWidth,
-				    gridMarginTop + (i-1)*cellHeight,
-				    cellWidth, cellHeight )
+                                    gridMarginLeft + (j-1)*cellWidth,
+                                    gridMarginTop + (i-1)*cellHeight,
+                                    cellWidth, cellHeight )
     	 else
     	    love.graphics.rectangle('line',
-				    gridMarginLeft + (j-1)*cellWidth,
-				    gridMarginTop + (i-1)*cellHeight,
-				    cellWidth, cellHeight )
+                                    gridMarginLeft + (j-1)*cellWidth,
+                                    gridMarginTop + (i-1)*cellHeight,
+                                    cellWidth, cellHeight )
     	 end
       end
       love.graphics.setColor(35/colorDivider,36/colorDivider,38/colorDivider, 1.0)
@@ -605,15 +606,15 @@ function love.draw()
       local ty = gridMarginTop + (openedInstrument-1)*cellHeight
       love.graphics.setColor(255/colorDivider,218/colorDivider,69/colorDivider)
       love.graphics.rectangle('fill',
-				    gridMarginLeft - 1,
-				    -1 + gridMarginTop + (openedInstrument-1)*cellHeight,
-				    2 + cellWidth * totalLength , 2+ cellHeight )
+                              gridMarginLeft - 1,
+                                 -1 + gridMarginTop + (openedInstrument-1)*cellHeight,
+                              2 + cellWidth * totalLength , 2+ cellHeight )
       love.graphics.setColor(0/colorDivider,0/colorDivider,0/colorDivider)
       love.graphics.print('pitch: '.. p.pitch, gridMarginLeft,  ty)
-      local pitchknob =  draw_knob('my-pitch', screenW/2, screenH/2,p.pitch, 0, 1, run )
+      local pitchknob =  draw_knob('my-pitch', screenW/2, screenH/2,p.pitch, 0, 5, run )
       if pitchknob.value then
-	 p.pitch = pitchknob.value
-	 -- print( rotateValue.value)
+         p.pitch = pitchknob.value
+         -- print( rotateValue.value)
       end
       --customPitchSlider:draw()
       love.graphics.print('swing: '.. p.swing, gridMarginLeft+ 200,  ty)
@@ -633,12 +634,12 @@ function love.draw()
 
    if playing then
       for i=1, #timers do
-	 local playhead = timers[i].playhead
-	 love.graphics.setColor(255/colorDivider,255/colorDivider,255/colorDivider)
-	 love.graphics.setLineWidth(2)
-	 love.graphics.rectangle('line',
-				 gridMarginLeft + (playhead-1)*24,
-				 gridMarginTop + ((i-1)*cellHeight), 24, cellHeight )
+         local playhead = timers[i].playhead
+         love.graphics.setColor(255/colorDivider,255/colorDivider,255/colorDivider)
+         love.graphics.setLineWidth(2)
+         love.graphics.rectangle('line',
+                                 gridMarginLeft + (playhead-1)*24,
+                                 gridMarginTop + ((i-1)*cellHeight), 24, cellHeight )
       end
 
 
@@ -647,35 +648,35 @@ function love.draw()
    love.graphics.setColor(0, 0, 0)
 
    -- draw slider, set color and line style before calling
-    love.graphics.print('bpm: '..string.format("%.2f", pattern.bpm) , 20, screenH - cellHeight*2)
-    love.graphics.print('swing: '..pattern.swing, 20,screenH - cellHeight*1)
-    swingSlider:draw()
-    love.graphics.print('pitch: '..pattern.pitch, 20 + 320, screenH - cellHeight*2)
-    --pitchSlider:draw()
-    love.graphics.print('volume: '..pattern.volume, 20 + 320, screenH - cellHeight*1)
-    volumeSlider:draw()
-    love.graphics.print('measure: '.. pattern.measure, 20 + 320 + 320,  screenH - cellHeight*2)
-    measureSlider:draw()
-    love.graphics.print('bars: '.. pattern.bars, 20 + 320 + 320,  screenH - cellHeight*1)
-    barsSlider:draw()
+   love.graphics.print('bpm: '..string.format("%.2f", pattern.bpm) , 20, screenH - cellHeight*2)
+   love.graphics.print('swing: '..pattern.swing, 20,screenH - cellHeight*1)
+   swingSlider:draw()
+   love.graphics.print('pitch: '..pattern.pitch, 20 + 320, screenH - cellHeight*2)
+   --pitchSlider:draw()
+   love.graphics.print('volume: '..pattern.volume, 20 + 320, screenH - cellHeight*1)
+   volumeSlider:draw()
+   love.graphics.print('measure: '.. pattern.measure, 20 + 320 + 320,  screenH - cellHeight*2)
+   measureSlider:draw()
+   love.graphics.print('bars: '.. pattern.bars, 20 + 320 + 320,  screenH - cellHeight*1)
+   barsSlider:draw()
 
-    local pitchknob =  draw_knob('pitch', 300, screenH - cellHeight*2,pattern.pitch, 0, 1, run )
-    if pitchknob.value then
+   local pitchknob =  draw_knob('pitch', 300, screenH - cellHeight*2,pattern.pitch, 0, 1, run )
+   if pitchknob.value then
       pattern.pitch = pitchknob.value
       -- print( rotateValue.value)
-    end
+   end
 
-    
-    local knob =  draw_knob('bpm', 100, screenH - cellHeight*2,pattern.bpm, 0, 300, run )
-    if knob.value then
-       --print("knob.value", knob.value)
+
+   local knob =  draw_knob('bpm', 100, screenH - cellHeight*2,pattern.bpm, 0, 300, run )
+   if knob.value then
+      --print("knob.value", knob.value)
       pattern.bpm = knob.value
       -- print( rotateValue.value)
-    end
-    
-    --love.graphics.print('pitch-rnd: '..pattern.pitchRandom, 20 + 320, 700 + cellHeight)
-    --pitchRandomSlider:draw()
-    count = love.audio.getActiveSourceCount( )
-    love.graphics.print('sources: '..count, 0,0)
+   end
+
+   --love.graphics.print('pitch-rnd: '..pattern.pitchRandom, 20 + 320, 700 + cellHeight)
+   --pitchRandomSlider:draw()
+   count = love.audio.getActiveSourceCount( )
+   love.graphics.print('sources: '..count, 0,0)
 
 end
