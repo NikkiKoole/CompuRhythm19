@@ -1,5 +1,4 @@
 inspect = require "inspect"
-require 'simple-slider'
 require 'ui'
 colorDivider = 255
 
