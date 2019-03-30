@@ -61,7 +61,44 @@ function mapInto(x, in_min, in_max, out_min, out_max)
    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 end
 
-function draw_knob(id, x,y, v, min, max, run)
+
+function draw_slider(id, x, y, width, v, min, max, mouseClicked)
+   love.graphics.setColor(0.3, 0.3, 0.3)
+   love.graphics.rectangle('fill',x,y+8,width,3 )
+   love.graphics.setColor(0, 0, 0)
+   local xOffset = mapInto(v, min, max, 0, width)
+   love.graphics.rectangle('fill',xOffset + x,y,20,20 )
+
+   local result= nil
+   local draggedResult = false
+   
+   if mouseClicked then
+      local mx, my = love.mouse.getPosition( )
+      if pointInRect(mx,my, xOffset+x,y,20,20) then
+         --result = true
+	 lastDraggedElement = {id=id}
+      end
+   end
+   if love.mouse.isDown(1 ) then
+      if lastDraggedElement and lastDraggedElement.id == id then
+	 local mx, my = love.mouse.getPosition( )
+	 --print("getting in here!", mx, my)
+	 --draggedResult = true
+	 result = mapInto(mx, x, x+width, min, max)
+	 result = math.max(result, min)
+	 result = math.min(result, max)
+		 
+      end
+   end
+   
+   return {
+      value=result
+   }
+   
+end
+
+
+function draw_knob(id, x,y, v, min, max, mouseClicked)
    local result = nil
    love.graphics.setColor(0, 0, 0)
    love.graphics.circle("fill", x, y, cellHeight/2, 100) -- Draw white circle with 100 segments.
@@ -83,7 +120,7 @@ function draw_knob(id, x,y, v, min, max, run)
    love.graphics.line(x+ax,y+ay,x+bx,y+by)
    love.graphics.setColor(1, 1, 1)
 
-   if run then
+   if mouseClicked then
       local mx, my = love.mouse.getPosition( )
       -- click to start dragging
       if pointInCircle(mx,my, x,y,cellHeight/2) then
