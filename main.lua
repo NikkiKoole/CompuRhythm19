@@ -64,8 +64,6 @@ function love.filedropped(file)
    pattern.bars = read.bars or 32
    pattern.volume = read.volume or 1
    pattern.measure = read.measure or 4
-
-   --updateSliders()
 end
 
 function love.load()
@@ -126,8 +124,8 @@ function love.load()
    gridMarginTop = 40
    gridMarginLeft = 24*6
    drawingValue = 1
-   cellWidth = 22
-   cellHeight = 22
+   cellWidth = 24
+   cellHeight = 32
 
    openedInstrument = 0
 
@@ -137,8 +135,6 @@ function love.load()
 
    lastMouseDown = nil
    lastDraggedElement = nil
-   rotateValue = {min=10, max=1000, value=0}
-
 end
 
 
@@ -264,6 +260,7 @@ function love.update(dt)
                end
 	       
 	       table.insert(soundList, {playTime=time+timeToAdd,
+					actualStart=0,
 					channelIndex=i,
 					pitch=pattern.pitch * pattern[i].pitch,
 					volume=volume,
@@ -274,14 +271,31 @@ function love.update(dt)
       end
 
       for i,line in ipairs(soundList) do
-	 if time >= line.playTime then
+	 if time >= line.playTime and not line.isPlaying then
 	    line.sfx:setPitch(math.max(line.pitch, 0.00001))
 	    line.sfx:setVolume(line.volume)
 	    line.sfx:setPosition(line.pan,0, 0 )
 	    line.sfx:play()
-	    table.remove(soundList, i)
+	    line.isPlaying = true
+	    line.actualStart = time
+
+	    
+	    
+	    --table.remove(soundList, i)
 	 end
       end
+      
+      for i,line in ipairs(soundList) do
+	 if (time > line.actualStart + 1.0) then -- aargh 1.0 !!!
+	    if  line.sfx:tell("samples") == 0 then
+	       line.sfx:stop()
+	       table.remove(soundList, i)
+	    end
+	 end
+      end
+      
+     
+      
    end
 end
 
@@ -294,6 +308,7 @@ function love.draw()
 
    local mouseDown = love.mouse.isDown(1 )
    local run = false
+   
    if mouseDown ~= lastMouseDown then
       if mouseDown then
          run = true
