@@ -2,7 +2,6 @@ inspect = require "inspect"
 require 'ui'
 colorDivider = 255
 
-
 function copy(obj, seen, ignore)
    if type(obj) ~= 'table' then return obj end
    if seen and seen[obj] then return seen[obj] end
@@ -16,8 +15,6 @@ function copy(obj, seen, ignore)
    end
    return res
 end
-
-
 
 function love.keypressed(key)
    if key == "escape" then
@@ -68,7 +65,7 @@ function love.filedropped(file)
    pattern.volume = read.volume or 1
    pattern.measure = read.measure or 4
 
-   updateSliders()
+   --updateSliders()
 end
 
 function love.load()
@@ -129,8 +126,8 @@ function love.load()
    gridMarginTop = 40
    gridMarginLeft = 24*6
    drawingValue = 1
-   cellWidth = 24
-   cellHeight = 32
+   cellWidth = 22
+   cellHeight = 22
 
    openedInstrument = 0
 
@@ -183,9 +180,6 @@ function handlePressInGrid(x,y, value)
    end
 end
 
-
-
-
 function getRowAndIndex(x,y)
    local x2 = x - gridMarginLeft
    local y2 = y - gridMarginTop
@@ -206,11 +200,8 @@ end
 function love.mousepressed(x, y)
    -- figure out if changing the cell under me means deleting r adding
    -- do that for all the cells touched by the subsequent move
-
    if lastDraggedElement then return end
-
    local row, index = getRowAndIndex(x,y)
-
    if openedInstrument == 0 then
       if row > -1 and index > -1 then
          local value = pattern[row].values[index]
@@ -219,21 +210,18 @@ function love.mousepressed(x, y)
       end
    end
 
-   if (x > 20 and x < gridMarginLeft) and
-   (y > gridMarginTop and y < gridMarginTop  + cellHeight* #pattern) then
+   if (x > 40 and x < gridMarginLeft) and (y > gridMarginTop and y < gridMarginTop  + cellHeight* #pattern) then
       local lx = x
       local ly = y - gridMarginTop
       local index = math.floor(ly / cellHeight) + 1
-
       if openedInstrument == index then
          openedInstrument = 0
       else
          openedInstrument = index
       end
- 
    end
-
 end
+
 function love.mousemoved(x,y)
    local down = love.mouse.isDown( 1)
    if down and openedInstrument == 0 and not lastDraggedElement then
@@ -241,17 +229,12 @@ function love.mousemoved(x,y)
    end
 end
 
-
 function love.update(dt)
-
-
    local multiplier = (60/(pattern.bpm*4))
-
 
    if (playing) then
       timers.timeInBeat = timers.timeInBeat + dt
       time = time + dt
-      
       if timers.timeInBeat >= multiplier then
 	 timers.timeInBeat = 0
 	 for i=1, #pattern do
@@ -268,7 +251,6 @@ function love.update(dt)
 		     timeToAdd = ((pattern[i].swing-50)/100.0) * multiplier
 		  end
 	       end
-
 	       -- accents
 	       local volume = 0.6
                if (timers[i].playhead-1) % pattern.measure == 0 then
@@ -288,7 +270,6 @@ function love.update(dt)
 					pan=pattern[i].pan,
 					sfx=pattern[i].sound:clone()})
 	    end
-	    
 	 end
       end
 
@@ -301,9 +282,7 @@ function love.update(dt)
 	    table.remove(soundList, i)
 	 end
       end
-      
    end
-
 end
 
 function love.draw()
@@ -333,8 +312,6 @@ function love.draw()
       --we assume some width is enough to fit all the names say 100
 
       for j=1, #(pattern[i].values)-1 do
-
-
          if (j %  pattern.measure == 0) then -- show a thicker line at measures
             --print(j % 4, j)
             love.graphics.line(gridMarginLeft + (j)*cellWidth,
@@ -382,7 +359,6 @@ function love.draw()
 
       love.graphics.print('volume: '.. string.format("%.2f",p.volume), gridMarginLeft+ 140,  ty)
       local volumeknob = draw_knob('my-volume',  gridMarginLeft+ 240,  ty + 15,p.volume, 0 , 1.0, run)
-      --local volumeslider = draw_slider('my-volume-slider', gridMarginLeft+ 240,  ty, 100, p.volume, 0 , 1.0, run)
       if volumeknob.value then
          p.volume = volumeknob.value
       end
@@ -398,10 +374,7 @@ function love.draw()
       if swingslider.value then
 	 p.swing = swingslider.value
       end
-
-
    end
-
 
    if playing then
       for i=1, #timers do
@@ -409,15 +382,12 @@ function love.draw()
          love.graphics.setColor(255/colorDivider,255/colorDivider,255/colorDivider)
          love.graphics.setLineWidth(2)
          love.graphics.rectangle('line',
-                                 gridMarginLeft + (playhead-1)*24,
-                                 gridMarginTop + ((i-1)*cellHeight), 24, cellHeight )
+                                 gridMarginLeft + (playhead-1)*cellWidth,
+                                 gridMarginTop + ((i-1)*cellHeight), cellWidth, cellHeight )
       end
-
-
    end
 
    love.graphics.setColor(0, 0, 0)
-
    love.graphics.print('volume: '..string.format("%.2f",pattern.volume), 20 + 240, screenH - cellHeight*1)
    local vs = draw_knob('volume', 20 + 240 + 40 , 10 +  screenH - cellHeight*2, pattern.volume, 0, 1.0, run)
    if vs.value then
@@ -452,6 +422,4 @@ function love.draw()
    love.graphics.print('sources: '..count, 0,0)
    love.graphics.print('time: '..string.format("%.2f",time), 0,20)
    love.graphics.print('soundList: '..#soundList, 0,40)
-
-
 end
