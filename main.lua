@@ -130,7 +130,6 @@ function love.load()
    openedInstrument = 0
 
    time = 0
-   resolutionTimer = 0
    soundList = {}
 
    lastMouseDown = nil
@@ -159,6 +158,7 @@ function addBars(pattern, count)
       pattern[i].randomPitch = 0
       pattern[i].swing = 50
       pattern[i].pan = 0
+      pattern[i].falloff = 0
       for j = 0, count do
          table.insert(pattern[i].values, false)
       end
@@ -244,9 +244,10 @@ function love.update(dt)
                local timeToAdd = 0
                if timers[i].playhead % 2 == 1 then
                   if pattern[i].swing ~= 50 then
-                     timeToAdd = ((pattern[i].swing-50)/100.0) * multiplier
+                     timeToAdd = ((pattern[i].swing-50)/50.0) * multiplier
                   end
                end
+
                -- accents
                local volume = 0.6
                if (timers[i].playhead-1) % pattern.measure == 0 then
@@ -260,10 +261,10 @@ function love.update(dt)
                end
 
                table.insert(soundList, {playTime=time+timeToAdd,
-                                        actualStart=0,
                                         channelIndex=i,
                                         pitch=pattern.pitch * pattern[i].pitch,
                                         volume=volume,
+					falloff=pattern[i].falloff,
                                         pan=pattern[i].pan,
                                         sfx=pattern[i].sound})
             end
@@ -278,19 +279,19 @@ function love.update(dt)
             line.sfx:setPosition(line.pan,0, 0 )
             line.sfx:play()
             line.isPlaying = true
-            --table.remove(soundList, i)
          end
       end
 
+      -- todo tween the volume  (fadeIn and fadeOut)
       for i,line in ipairs(soundList) do
-         if line.isPlaying and line.sfx:tell("samples") > line.sfx:getDuration('samples')/4 then
---         if not line.sfx:isPlaying() then
-            line.sfx:stop()
-            table.remove(soundList, i)
-         end
+	 local ratio =  line.sfx:tell("samples") / line.sfx:getDuration('samples')
+	 if line.isPlaying then
+	    if not line.sfx:isPlaying()  or ratio > (1.0 - line.falloff)then
+	       line.sfx:stop()
+	       table.remove(soundList, i)
+	    end
+	 end
       end
-
-
 
    end
 end
@@ -324,7 +325,6 @@ function love.draw()
 
       for j=1, #(pattern[i].values)-1 do
          if (j %  pattern.measure == 0) then -- show a thicker line at measures
-            --print(j % 4, j)
             love.graphics.line(gridMarginLeft + (j)*cellWidth,
                                gridMarginTop ,
                                gridMarginLeft + (j)*cellWidth,
@@ -356,34 +356,45 @@ function love.draw()
       local p = pattern[openedInstrument]
       local ty = gridMarginTop + (openedInstrument-1)*cellHeight
       love.graphics.setColor(255/colorDivider,218/colorDivider,69/colorDivider)
+      local padding = 10
       love.graphics.rectangle('fill',
                               gridMarginLeft - 1,
                                  -1 + gridMarginTop + (openedInstrument-1)*cellHeight,
                               2 + cellWidth * totalLength , 2+ cellHeight )
+      
       love.graphics.setColor(0,0,0)
-      love.graphics.print('pitch: '..string.format("%.4f",p.pitch), gridMarginLeft, ty)
-      local pitchknob =  draw_knob('my-pitch', gridMarginLeft + 110, ty + 15,p.pitch, 0.00001, 5, run )
-      if pitchknob.value then
-         p.pitch = pitchknob.value
-      end
-      love.graphics.setColor(0,0,0)
-
-      love.graphics.print('volume: '.. string.format("%.2f",p.volume), gridMarginLeft+ 140,  ty)
-      local volumeknob = draw_knob('my-volume',  gridMarginLeft+ 240,  ty + 15,p.volume, 0 , 1.0, run)
+      love.graphics.print('volume: '.. string.format("%.2f",p.volume), gridMarginLeft,  ty)
+      local volumeknob = draw_knob('my-volume',  gridMarginLeft+ 120,  ty + 15,p.volume, 0 , 1.0, run)
       if volumeknob.value then
          p.volume = volumeknob.value
       end
+    
       love.graphics.setColor(0,0,0)
-      love.graphics.print('pan: '.. string.format("%.2f",p.pan), gridMarginLeft+ 280,  ty)
-      local panslider = draw_knob('my-pan-slider', gridMarginLeft+ 360,  ty+15, p.pan, -1.0 , 1.0, run)
+      love.graphics.print('pan: '.. string.format("%.2f",p.pan), gridMarginLeft+ 120 + 20,  ty)
+      local panslider = draw_knob('my-pan-slider', gridMarginLeft+ 240,  ty+15, p.pan, -1.0 , 1.0, run)
       if panslider.value then
          p.pan = panslider.value
       end
+
+       love.graphics.setColor(0,0,0)
+      love.graphics.print('pitch: '..string.format("%.4f",p.pitch), gridMarginLeft + 240 + 20, ty)
+      local pitchknob =  draw_knob('my-pitch', gridMarginLeft + 360, ty + 15,p.pitch, 0.00001, 5, run )
+      if pitchknob.value then
+         p.pitch = pitchknob.value
+      end
+      
       love.graphics.setColor(0,0,0)
-      love.graphics.print('swing: '.. string.format("%.2f",p.swing), gridMarginLeft+ 400,  ty)
-      local swingslider = draw_knob('my-swing-slider', gridMarginLeft+ 500,  ty+15, p.swing, 50 , 100, run)
+      love.graphics.print('swing: '.. string.format("%.2f",p.swing), gridMarginLeft+ 380,  ty)
+      local swingslider = draw_knob('my-swing-slider', gridMarginLeft+ 480,  ty+15, p.swing, 50 , 100, run)
       if swingslider.value then
          p.swing = swingslider.value
+      end
+
+      love.graphics.setColor(0,0,0)
+      love.graphics.print('falloff: '.. string.format("%.2f", p.falloff), gridMarginLeft+ 500,  ty)
+      local falloffslider = draw_knob('my-falloff-slider', gridMarginLeft+ 600,  ty+15, p.falloff, 0 , 1.0, run)
+      if falloffslider.value then
+         p.falloff = falloffslider.value
       end
    end
 
