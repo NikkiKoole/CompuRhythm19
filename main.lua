@@ -53,6 +53,7 @@ function love.filedropped(file)
       pattern[i].swing = read[i].swing
       pattern[i].pan = read[i].pan or 0
       pattern[i].volume = read[i].volume
+      pattern[i].falloff = read[i].falloff or 0
       pattern[i].values = read[i].values
    end
 
