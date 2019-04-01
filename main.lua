@@ -232,23 +232,23 @@ function love.update(dt)
       timers.timeInBeat = timers.timeInBeat + dt
       time = time + dt
       if timers.timeInBeat >= multiplier then
-	 timers.timeInBeat = 0
-	 for i=1, #pattern do
+         timers.timeInBeat = 0
+         for i=1, #pattern do
       	    timers[i].playhead = timers[i].playhead + 1
 
-	    if (timers[i].playhead > pattern.bars) then
+            if (timers[i].playhead > pattern.bars) then
       	       timers[i].playhead = 1
       	    end
-	    
-	    if pattern[i].values[timers[i].playhead] then
-	       local timeToAdd = 0
-	       if timers[i].playhead % 2 == 1 then
-		  if pattern[i].swing ~= 50 then
-		     timeToAdd = ((pattern[i].swing-50)/100.0) * multiplier
-		  end
-	       end
-	       -- accents
-	       local volume = 0.6
+
+            if pattern[i].values[timers[i].playhead] then
+               local timeToAdd = 0
+               if timers[i].playhead % 2 == 1 then
+                  if pattern[i].swing ~= 50 then
+                     timeToAdd = ((pattern[i].swing-50)/100.0) * multiplier
+                  end
+               end
+               -- accents
+               local volume = 0.6
                if (timers[i].playhead-1) % pattern.measure == 0 then
                   volume = volume + 0.4
                end
@@ -258,44 +258,40 @@ function love.update(dt)
                if pattern[i].muted then
                   volume = volume * 0
                end
-	       
-	       table.insert(soundList, {playTime=time+timeToAdd,
-					actualStart=0,
-					channelIndex=i,
-					pitch=pattern.pitch * pattern[i].pitch,
-					volume=volume,
-					pan=pattern[i].pan,
-					sfx=pattern[i].sound:clone()})
-	    end
-	 end
+
+               table.insert(soundList, {playTime=time+timeToAdd,
+                                        actualStart=0,
+                                        channelIndex=i,
+                                        pitch=pattern.pitch * pattern[i].pitch,
+                                        volume=volume,
+                                        pan=pattern[i].pan,
+                                        sfx=pattern[i].sound})
+            end
+         end
       end
 
       for i,line in ipairs(soundList) do
-	 if time >= line.playTime and not line.isPlaying then
-	    line.sfx:setPitch(math.max(line.pitch, 0.00001))
-	    line.sfx:setVolume(line.volume)
-	    line.sfx:setPosition(line.pan,0, 0 )
-	    line.sfx:play()
-	    line.isPlaying = true
-	    line.actualStart = time
+         if time >= line.playTime and not line.isPlaying then
+            line.sfx = line.sfx:clone()
+            line.sfx:setPitch(math.max(line.pitch, 0.00001))
+            line.sfx:setVolume(line.volume)
+            line.sfx:setPosition(line.pan,0, 0 )
+            line.sfx:play()
+            line.isPlaying = true
+            --table.remove(soundList, i)
+         end
+      end
 
-	    
-	    
-	    --table.remove(soundList, i)
-	 end
-      end
-      
       for i,line in ipairs(soundList) do
-	 if (time > line.actualStart + 1.0) then -- aargh 1.0 !!!
-	    if  line.sfx:tell("samples") == 0 then
-	       line.sfx:stop()
-	       table.remove(soundList, i)
-	    end
-	 end
+--         if line.isPlaying and line.sfx:tell("samples") > 100 then
+         if not line.sfx:isPlaying() then
+            line.sfx:stop()
+            table.remove(soundList, i)
+         end
       end
-      
-     
-      
+
+
+
    end
 end
 
@@ -308,7 +304,7 @@ function love.draw()
 
    local mouseDown = love.mouse.isDown(1 )
    local run = false
-   
+
    if mouseDown ~= lastMouseDown then
       if mouseDown then
          run = true
@@ -381,13 +377,13 @@ function love.draw()
       love.graphics.print('pan: '.. string.format("%.2f",p.pan), gridMarginLeft+ 280,  ty)
       local panslider = draw_knob('my-pan-slider', gridMarginLeft+ 360,  ty+15, p.pan, -1.0 , 1.0, run)
       if panslider.value then
-	 p.pan = panslider.value
+         p.pan = panslider.value
       end
       love.graphics.setColor(0,0,0)
       love.graphics.print('swing: '.. string.format("%.2f",p.swing), gridMarginLeft+ 400,  ty)
       local swingslider = draw_knob('my-swing-slider', gridMarginLeft+ 500,  ty+15, p.swing, 50 , 100, run)
       if swingslider.value then
-	 p.swing = swingslider.value
+         p.swing = swingslider.value
       end
    end
 
@@ -414,7 +410,7 @@ function love.draw()
    if ms.value then
       pattern.measure =math.floor( ms.value)
    end
-   
+
    love.graphics.print('bars: '.. pattern.bars, screenW - 180,  screenH - cellHeight*1)
    local bs = draw_slider('bars', screenW-100 ,  screenH - cellHeight*1, 50, pattern.bars, 1, 32, run)
    if bs.value then
