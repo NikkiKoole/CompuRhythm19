@@ -283,8 +283,8 @@ function love.update(dt)
       end
 
       for i,line in ipairs(soundList) do
---         if line.isPlaying and line.sfx:tell("samples") > 100 then
-         if not line.sfx:isPlaying() then
+         if line.isPlaying and line.sfx:tell("samples") > line.sfx:getDuration('samples')/4 then
+--         if not line.sfx:isPlaying() then
             line.sfx:stop()
             table.remove(soundList, i)
          end
