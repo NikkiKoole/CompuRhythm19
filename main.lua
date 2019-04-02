@@ -285,13 +285,19 @@ function love.update(dt)
 
       -- todo tween the volume  (fadeIn and fadeOut)
       for i,line in ipairs(soundList) do
-	 local ratio =  line.sfx:tell("samples") / line.sfx:getDuration('samples')
-	 if line.isPlaying then
-	    if not line.sfx:isPlaying()  or ratio > (1.0 - line.falloff)then
-	       line.sfx:stop()
-	       table.remove(soundList, i)
-	    end
-	 end
+         local ratio =  line.sfx:tell("samples") / line.sfx:getDuration('samples')
+
+         local vibratoPitch = (((ratio * 64 ) % 16) - 8)/100
+         local result = math.max(line.pitch + vibratoPitch, 0.00001)
+
+         line.sfx:setPitch(result);
+         line.sfx:setVolume(result);
+         if line.isPlaying then
+            if not line.sfx:isPlaying()  or ratio > (1.0 - line.falloff)then
+               line.sfx:stop()
+               table.remove(soundList, i)
+            end
+         end
       end
 
    end
@@ -362,14 +368,14 @@ function love.draw()
                               gridMarginLeft - 1,
                                  -1 + gridMarginTop + (openedInstrument-1)*cellHeight,
                               2 + cellWidth * totalLength , 2+ cellHeight )
-      
+
       love.graphics.setColor(0,0,0)
       love.graphics.print('volume: '.. string.format("%.2f",p.volume), gridMarginLeft,  ty)
       local volumeknob = draw_knob('my-volume',  gridMarginLeft+ 120,  ty + 15,p.volume, 0 , 1.0, run)
       if volumeknob.value then
          p.volume = volumeknob.value
       end
-    
+
       love.graphics.setColor(0,0,0)
       love.graphics.print('pan: '.. string.format("%.2f",p.pan), gridMarginLeft+ 120 + 20,  ty)
       local panslider = draw_knob('my-pan-slider', gridMarginLeft+ 240,  ty+15, p.pan, -1.0 , 1.0, run)
@@ -383,7 +389,7 @@ function love.draw()
       if pitchknob.value then
          p.pitch = pitchknob.value
       end
-      
+
       love.graphics.setColor(0,0,0)
       love.graphics.print('swing: '.. string.format("%.2f",p.swing), gridMarginLeft+ 380,  ty)
       local swingslider = draw_knob('my-swing-slider', gridMarginLeft+ 480,  ty+15, p.swing, 50 , 100, run)
