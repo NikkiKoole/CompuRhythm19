@@ -286,12 +286,15 @@ function love.update(dt)
       -- todo tween the volume  (fadeIn and fadeOut)
       for i,line in ipairs(soundList) do
          local ratio =  line.sfx:tell("samples") / line.sfx:getDuration('samples')
+         --print(ratio, math.sin(ratio * math.pi*2))
 
-         local vibratoPitch = (((ratio * 64 ) % 16) - 8)/100
-         local result = math.max(line.pitch + vibratoPitch, 0.00001)
+         --print(time, time % 10)
+         local vibratoPitch = (((ratio * 64 ) % 16) - 8)/ 24
+         --print(vibratoPitch)
+         local result = math.max(line.pitch + vibratoPitch/2, 0.00001)
 
          line.sfx:setPitch(result);
-         line.sfx:setVolume(result);
+         --line.sfx:setVolume(result);
          if line.isPlaying then
             if not line.sfx:isPlaying()  or ratio > (1.0 - line.falloff)then
                line.sfx:stop()
