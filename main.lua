@@ -67,45 +67,47 @@ function love.filedropped(file)
    pattern.measure = read.measure or 4
 end
 
+
+
+function makePatternFromKit(kit, path)
+   local result = {}
+   for k,v in ipairs(kit) do
+      table.insert(result, {name=v.name, url=path..v.file})
+
+   end
+   return result
+end
+
+
 function love.load()
    love.window.setMode(1024, 768)
    font = love.graphics.newFont("futura.ttf", 20)
    love.graphics.setFont(font)
    love.audio.setPosition(0, 1, 0)
-   pattern = {
-      -- {name='bd', url='samples/TR808WAV/BD/BD1010.wav'},
-      -- {name='bd', url='samples/TR808WAV/BD/BD1050.wav'},
-      -- {name='bd', url='samples/tr606/01bd.wav'},
-      -- {name='sd', url='samples/tr606/02sd.wav'},
-      -- {name='ch', url='samples/tr606/03ch.wav'},
-      -- {name='CLAV', url='samples/kr55/KR55CLAV.wav'},
-      -- {name='donk', url='samples/donk/Donk1.wav'},
-      {name='donk', url='samples/donk/Donk2.wav'},
-      {name='clarinet', url='samples/timbres/clarinet_loop_middle.wav'},
-      {name='donk', url='samples/donk/Donk3.wav'},
-      {name='CHaT', url='samples/kr55/KR55CHAT.wav'},
-      {name='CNGA', url='samples/kr55/KR55CNGA.wav'},
-      -- {name='bass', url='samples/cr8000/CR8KBASS.wav'},
-      -- {name='CymbalR', url='samples/cr78/Cymbal_reversed.wav'},
-      -- {name='Cymbal', url='samples/cr78/Cymbal.wav'},
-      -- {name='Cowbell', url='samples/cr78/Cowbell.wav'},
-      -- {name='Conga', url='samples/cr78/Conga Low.wav'},
-      -- {name='HiHat accent', url='samples/cr78/HiHat Accent.wav'},
-      {name='Bongo High', url='samples/cr78/Bongo High.wav'},
-      {name='Bongo Low', url='samples/cr78/Bongo Low.wav'},
-      {name='Tamb 1', url='samples/cr78/Tamb 1.wav'},
-      {name='Tamb 2', url='samples/cr78/Tamb 2.wav'},
-      {name='Conga Low', url='samples/cr78/Conga Low.wav'},
-      {name='HiHat Metal', url='samples/cr78/HiHat Metal.wav'},
-      {name='HiHat', url='samples/cr78/HiHat.wav'},
-      --{name='Guiro 1', url='samples/cr78/Guiro 1.wav'},
-      --{name='Guiro 2', url='samples/cr78/Guiro 2.wav'},
-      {name='Snare accent', url='samples/cr78/Snare Accent.wav'},
-      {name='Snare', url='samples/cr78/Snare.wav'},
-      {name='Rim', url='samples/cr78/Rim Shot.wav'},
-      {name='Kick', url='samples/cr78/Kick.wav'},
-      {name='Kick accent', url='samples/cr78/Kick Accent.wav'},
+
+   drumkits = {
+      ['cr78'] = {
+      	 {name="Bongo High", file="Bongo High.wav"},
+      	 {name="Bongo Low", file="Bongo Low.wav"},
+      	 {name="Conga Low", file="Conga Low.wav"},
+      	 {name="Cowbell", file="Cowbell.wav"},
+      	 {name="Cymbal", file="Cymbal.wav"},
+      	 {name="Guiro 1", file="Guiro 1.wav"},
+      	 {name="Guiro 2", file="Guiro 2.wav"},
+      	 {name="HiHat Accent", file="HiHat Accent.wav"},
+      	 {name="HiHat Metal", file="HiHat Metal.wav"},
+      	 {name="HiHat", file="HiHat.wav"},
+	 {name="Kick Accent", file="Kick Accent.wav"},
+	 {name="Kick", file="Kick.wav"},
+      	 {name="Rim Shot", file="Rim Shot.wav"},
+      	 {name="Snare Accent", file="Snare Accent.wav"},
+      	 {name="Snare", file="Snare.wav"},
+      	 {name="Tamb 1", file="Tamb 1.wav"},
+      	 {name="Tamb 2", file="Tamb 2.wav"},
+      }
    }
+   
+   pattern =  makePatternFromKit(drumkits['cr78'], 'samples/cr78/' )
 
    totalLength = 32
    addBars(pattern, totalLength)
@@ -122,12 +124,12 @@ function love.load()
 
    playing = false
 
-   gridMarginTop = 40
-   gridMarginLeft = 24*6
+   
    drawingValue = 1
-   cellWidth = 24
+   cellWidth = 22
    cellHeight = 32
-
+   gridMarginTop = 80
+   gridMarginLeft = 1024 - cellWidth * 32 - 10
    openedInstrument = 0
 
    time = 0
@@ -195,33 +197,21 @@ end
 
 
 function love.mousepressed(x, y)
-   -- figure out if changing the cell under me means deleting r adding
-   -- do that for all the cells touched by the subsequent move
    if lastDraggedElement then return end
+   
    local row, index = getRowAndIndex(x,y)
-   if openedInstrument == 0 then
+   --if openedInstrument == 0 then
       if row > -1 and index > -1 then
          local value = pattern[row].values[index]
          drawingValue = not value
          handlePressInGrid(x,y, drawingValue)
       end
-   end
-
-   if (x > 40 and x < gridMarginLeft) and (y > gridMarginTop and y < gridMarginTop  + cellHeight* #pattern) then
-      local lx = x
-      local ly = y - gridMarginTop
-      local index = math.floor(ly / cellHeight) + 1
-      if openedInstrument == index then
-         openedInstrument = 0
-      else
-         openedInstrument = index
-      end
-   end
+   --end
 end
 
 function love.mousemoved(x,y)
    local down = love.mouse.isDown( 1)
-   if down and openedInstrument == 0 and not lastDraggedElement then
+   if down and not lastDraggedElement then
       handlePressInGrid(x,y, drawingValue)
    end
 end
@@ -290,8 +280,8 @@ function love.update(dt)
          local vibratoPitch = (((ratio * 64 ) % 16) - 8)/100
          local result = math.max(line.pitch + vibratoPitch, 0.00001)
 
-         line.sfx:setPitch(result);
-         line.sfx:setVolume(result);
+         --line.sfx:setPitch(result);
+         --line.sfx:setVolume(result);
          if line.isPlaying then
             if not line.sfx:isPlaying()  or ratio > (1.0 - line.falloff)then
                line.sfx:stop()
@@ -322,13 +312,25 @@ function love.draw()
 
    for i =1, #pattern do
 
-      if draw_button(4,gridMarginTop + (i-1) * cellHeight,pattern[i].muted,run ).clicked then
+      if draw_button(gridMarginLeft - 30 , gridMarginTop + (i-1) * cellHeight,pattern[i].muted,run ).clicked then
          pattern[i].muted = not pattern[i].muted
       end
 
-      love.graphics.print(pattern[i].name,  40, gridMarginTop + (i-1) * cellHeight)
-      love.graphics.rectangle('line',40,  gridMarginTop + (i-1)*cellHeight, 90, cellHeight )
-      --we assume some width is enough to fit all the names say 100
+      if draw_label_button(gridMarginLeft - 126, gridMarginTop + (i-1) * cellHeight, pattern[i].name, pattern[i].selected, run).clicked then
+	 if openedInstrument == i then
+	    openedInstrument = 0
+	    pattern[i].selected = false
+	 else
+	    openedInstrument = i
+	    -- clear all others
+	    for j=1, #pattern do
+	       pattern[j].selected = false
+	    end
+	    
+	    pattern[i].selected = true
+	    
+	 end
+      end
 
       for j=1, #(pattern[i].values)-1 do
          if (j %  pattern.measure == 0) then -- show a thicker line at measures
@@ -361,45 +363,43 @@ function love.draw()
 
    if openedInstrument > 0 then
       local p = pattern[openedInstrument]
-      local ty = gridMarginTop + (openedInstrument-1)*cellHeight
-      love.graphics.setColor(255/colorDivider,218/colorDivider,69/colorDivider)
+      local ty = gridMarginTop + 100-- gridMarginTop + (openedInstrument-1)*cellHeight
+      --love.graphics.setColor(255/colorDivider,218/colorDivider,69/colorDivider)
       local padding = 10
-      love.graphics.rectangle('fill',
-                              gridMarginLeft - 1,
-                                 -1 + gridMarginTop + (openedInstrument-1)*cellHeight,
-                              2 + cellWidth * totalLength , 2+ cellHeight )
 
+      --love.graphics.setColor(0,0,0)
+      --draw_label_button(20, gridMarginTop, p.name)
       love.graphics.setColor(0,0,0)
-      love.graphics.print('volume: '.. string.format("%.2f",p.volume), gridMarginLeft,  ty)
-      local volumeknob = draw_knob('my-volume',  gridMarginLeft+ 120,  ty + 15,p.volume, 0 , 1.0, run)
+      love.graphics.print('volume: '.. string.format("%.2f",p.volume), 20,  ty + 30)
+      local volumeknob = draw_knob('my-volume',  150,  ty + 40,p.volume, 0 , 1.0, run)
       if volumeknob.value then
          p.volume = volumeknob.value
       end
 
       love.graphics.setColor(0,0,0)
-      love.graphics.print('pan: '.. string.format("%.2f",p.pan), gridMarginLeft+ 120 + 20,  ty)
-      local panslider = draw_knob('my-pan-slider', gridMarginLeft+ 240,  ty+15, p.pan, -1.0 , 1.0, run)
+      love.graphics.print('pan: '.. string.format("%.2f",p.pan), 20,  ty+80)
+      local panslider = draw_knob('my-pan-slider', 150,  ty+90, p.pan, -1.0 , 1.0, run)
       if panslider.value then
          p.pan = panslider.value
       end
 
        love.graphics.setColor(0,0,0)
-      love.graphics.print('pitch: '..string.format("%.4f",p.pitch), gridMarginLeft + 240 + 20, ty)
-      local pitchknob =  draw_knob('my-pitch', gridMarginLeft + 360, ty + 15,p.pitch, 0.00001, 5, run )
+      love.graphics.print('pitch: '..string.format("%.4f",p.pitch), 20, ty+130)
+      local pitchknob =  draw_knob('my-pitch',150, ty + 140,p.pitch, 0.00001, 5, run )
       if pitchknob.value then
          p.pitch = pitchknob.value
       end
 
       love.graphics.setColor(0,0,0)
-      love.graphics.print('swing: '.. string.format("%.2f",p.swing), gridMarginLeft+ 380,  ty)
-      local swingslider = draw_knob('my-swing-slider', gridMarginLeft+ 480,  ty+15, p.swing, 50 , 100, run)
+      love.graphics.print('swing: '.. string.format("%.2f",p.swing), 20,  ty+180)
+      local swingslider = draw_knob('my-swing-slider', 150,  ty+190, p.swing, 50 , 100, run)
       if swingslider.value then
          p.swing = swingslider.value
       end
 
       love.graphics.setColor(0,0,0)
-      love.graphics.print('falloff: '.. string.format("%.2f", p.falloff), gridMarginLeft+ 500,  ty)
-      local falloffslider = draw_knob('my-falloff-slider', gridMarginLeft+ 600,  ty+15, p.falloff, 0 , 1.0, run)
+      love.graphics.print('falloff: '.. string.format("%.2f", p.falloff), 20,  ty+230)
+      local falloffslider = draw_knob('my-falloff-slider', 150,  ty+240, p.falloff, 0 , 1.0, run)
       if falloffslider.value then
          p.falloff = falloffslider.value
       end
@@ -448,6 +448,7 @@ function love.draw()
    end
 
    count = love.audio.getActiveSourceCount( )
+   love.graphics.setColor(1,1,1)
    love.graphics.print('sources: '..count, 0,0)
    love.graphics.print('time: '..string.format("%.2f",time), 0,20)
    love.graphics.print('soundList: '..#soundList, 0,40)
