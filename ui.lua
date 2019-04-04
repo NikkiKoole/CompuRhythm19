@@ -20,7 +20,6 @@ function pointInCircle(x,y, cx, cy, radius)
    end
 end
 function draw_button(x,y,p, run)
-   --print(inspect(p), inspect(p2))
    local result= false
    if not p then
       love.graphics.rectangle('fill',x,y,cellWidth,cellHeight )
@@ -32,6 +31,31 @@ function draw_button(x,y,p, run)
    if run then
       local mx, my = love.mouse.getPosition( )
       if pointInRect(mx,my, x,y,cellWidth,cellHeight) then
+         result = true
+      end
+   end
+
+   return {
+      clicked=result
+   }
+end
+function draw_label_button(x,y, label, p, run)
+   local buttonWidth = 90
+   local result= false
+   if p then
+      local r,g,b,a = love.graphics.getColor()
+      love.graphics.setColor(r,g,b,0.5)
+      love.graphics.rectangle('fill',x,y,buttonWidth,cellHeight )
+      love.graphics.setColor(r,g,b,a)
+
+   else
+      love.graphics.rectangle('line',x,y,buttonWidth,cellHeight )
+   end
+   love.graphics.print(label, x+5, y)
+
+   if run then
+      local mx, my = love.mouse.getPosition( )
+      if pointInRect(mx,my, x,y,buttonWidth,cellHeight) then
          result = true
       end
    end
@@ -62,7 +86,7 @@ function mapInto(x, in_min, in_max, out_min, out_max)
 end
 
 
-function draw_slider(id, x, y, width, v, min, max, mouseClicked)
+function draw_horizontal_slider(id, x, y, width, v, min, max, mouseClicked)
    love.graphics.setColor(0.3, 0.3, 0.3)
    love.graphics.rectangle('fill',x,y+8,width,3 )
    love.graphics.setColor(0, 0, 0)
@@ -71,35 +95,61 @@ function draw_slider(id, x, y, width, v, min, max, mouseClicked)
 
    local result= nil
    local draggedResult = false
-   
+
    if mouseClicked then
       local mx, my = love.mouse.getPosition( )
       if pointInRect(mx,my, xOffset+x,y,20,20) then
-         --result = true
-	 lastDraggedElement = {id=id}
+         lastDraggedElement = {id=id}
       end
    end
    if love.mouse.isDown(1 ) then
       if lastDraggedElement and lastDraggedElement.id == id then
-	 local mx, my = love.mouse.getPosition( )
-	 --print("getting in here!", mx, my)
-	 --draggedResult = true
-	 result = mapInto(mx, x, x+width, min, max)
-	 result = math.max(result, min)
-	 result = math.min(result, max)
-		 
+         local mx, my = love.mouse.getPosition( )
+         result = mapInto(mx, x, x+width, min, max)
+         result = math.max(result, min)
+         result = math.min(result, max)
+
       end
    end
-   
    return {
       value=result
    }
-   
 end
 
+function draw_vertical_slider(id, x, y, height, v, min, max, mouseClicked)
+   love.graphics.rectangle('fill',x+8,y,3,height )
+   local yOffset = mapInto(v, min, max, 0, height)
+   love.graphics.rectangle('fill',x,y +height - yOffset,20,20 )
+
+   local result= nil
+   local draggedResult = false
+
+   if mouseClicked then
+      local mx, my = love.mouse.getPosition( )
+      if pointInRect(mx,my, x,y+height-yOffset,20,20) then
+         lastDraggedElement = {id=id}
+      end
+   end
+
+   if love.mouse.isDown(1 ) then
+      local mx, my = love.mouse.getPosition( )
+      if (lastDraggedElement and lastDraggedElement.id == id) or
+      (mx <= x+20 and mx >x) then
+
+         result = mapInto(my, y+height, y, min, max)
+         result = math.max(result, min)
+         result = math.min(result, max)
+
+      end
+   end
+   return {
+      value=result
+   }
+end
 
 function draw_knob(id, x,y, v, min, max, mouseClicked)
    local result = nil
+   local r,g,b,a = love.graphics.getColor()
    love.graphics.setColor(0, 0, 0)
    love.graphics.circle("fill", x, y, cellHeight/2, 100) -- Draw white circle with 100 segments.
 
@@ -118,8 +168,7 @@ function draw_knob(id, x,y, v, min, max, mouseClicked)
    bx, by = angleAtDistance(x,y,a, cellHeight/4)
    love.graphics.setColor(1, 1, 1)
    love.graphics.line(x+ax,y+ay,x+bx,y+by)
-   love.graphics.setColor(1, 1, 1)
-
+   love.graphics.setColor(r,g,b,a)
    if mouseClicked then
       local mx, my = love.mouse.getPosition( )
       -- click to start dragging
@@ -132,24 +181,15 @@ function draw_knob(id, x,y, v, min, max, mouseClicked)
       if lastDraggedElement and lastDraggedElement.id == id then
          local mx, my = love.mouse.getPosition( )
          local a = angle(mx, my, x, y)
-         --print(a)
-         --if a ~=  lastDraggedElement.rolling then
+
          result = mapInto(a, math.pi, -math.pi, min, max)
 
          if a ~= lastDraggedElement.rolling then
-            --print(a, v)
             lastDraggedElement.rolling = a
          else
 
             result = nil
          end
-
-         --end
-
-
-
-
-
          love.graphics.line(mx,my,x,y)
 
       end
@@ -159,4 +199,3 @@ function draw_knob(id, x,y, v, min, max, mouseClicked)
       value=result
    }
 end
-
