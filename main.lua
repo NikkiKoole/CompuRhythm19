@@ -131,6 +131,7 @@ function love.load()
    gridMarginTop = 80
    gridMarginLeft = 1024 - cellWidth * 32 - 10
    openedInstrument = 0
+   openedNotePanel = nil
 
    time = 0
    soundList = {}
@@ -164,7 +165,7 @@ function addBars(pattern, count)
       pattern[i].falloff = 0
       pattern[i].accented = false
       for j = 0, count do
-         table.insert(pattern[i].values, {on=false, volume=1, pitch=1})
+         table.insert(pattern[i].values, {on=false, volume=1, pitch=1, pan=0})
       end
    end
 end
@@ -201,7 +202,7 @@ function love.mousepressed(x, y)
    if lastDraggedElement then return end
 
    local row, index = getRowAndIndex(x,y)
-   if openedInstrument == 0 or  (not pattern[openedInstrument].volumes and not pattern[openedInstrument].pitches )then
+   if not openedNotePanel then
       if row > -1 and index > -1 then
          local value = pattern[row].values[index].on
          drawingValue = not value
@@ -213,9 +214,12 @@ end
 function love.mousemoved(x,y)
    local down = love.mouse.isDown( 1)
    if down and not lastDraggedElement then
-      if openedInstrument == 0 or  (not pattern[openedInstrument].volumes and not pattern[openedInstrument].pitches ) then
+      if not openedNotePanel then
          handlePressInGrid(x,y, drawingValue)
+      else
+        -- print(openedNotePanel)
       end
+
    end
 end
 
@@ -266,7 +270,7 @@ function love.update(dt)
                                         pitch=pattern.pitch * pattern[i].pitch * (pattern[i].values[timers[i].playhead].pitch or 1),
                                         volume=volume,
                                         falloff=pattern[i].falloff,
-                                        pan=pattern[i].pan,
+                                        pan=pattern[i].values[timers[i].playhead].pan or pattern[i].pan,
                                         sfx=pattern[i].sound})
             end
          end
@@ -278,6 +282,7 @@ function love.update(dt)
             local pitch = math.max(line.pitch, 0.00001)
             line.sfx:setPitch(pitch)
             line.sfx:setVolume(line.volume)
+
             line.sfx:setPosition(line.pan,0, 0 )
             line.sfx:play()
             line.isPlaying = true
@@ -413,37 +418,29 @@ function love.draw()
          p.falloff = falloffslider.value
       end
 
+
       if draw_label_button(20, ty+280, 'accented', p.accented, run).clicked then
          p.accented = not p.accented
       end
-      if draw_label_button(20, ty+330, 'volumes', p.volumes, run).clicked then
-         p.volumes = not p.volumes
-         p.pitches = false
-      end
-      if draw_label_button(20, ty+380, 'pitches', p.pitches, run).clicked then
-         p.pitches = not p.pitches
-         p.volumes = false
 
-      end
+      local panels = {'volume', 'pitch', 'pan'}
+      for i=1, #panels do
+         local p = panels[i]
 
-      if p.volumes then
-         love.graphics.setColor(255/colorDivider, 198/colorDivider, 49/colorDivider, 0.9)
-         love.graphics.rectangle('fill', gridMarginLeft, gridMarginTop, cellWidth * totalLength, cellHeight* #pattern )
-         love.graphics.setColor(1,1,1)
-         for i=1, totalLength do
-            if (p.values[i].on) then
-               love.graphics.setColor(0,0,0,1)
+         if draw_label_button(20, ty+280+i*50, p, openedNotePanel == p, run).clicked then
+            if openedNotePanel ~= p then
+               openedNotePanel = p
             else
-               love.graphics.setColor(0,0,0,.1)
-            end
-            local mydeeper = draw_vertical_slider('my-deeperslider-'..i, gridMarginLeft + i*cellWidth -cellWidth, gridMarginTop, cellHeight* #pattern, p.values[i].volume, 0, 1, run)
-            if mydeeper.value then
-               p.values[i].volume = mydeeper.value
+               openedNotePanel = nil
             end
 
          end
       end
-      if p.pitches then
+
+
+
+
+      if openedNotePanel then
          love.graphics.setColor(255/colorDivider, 198/colorDivider, 49/colorDivider, 0.9)
          love.graphics.rectangle('fill', gridMarginLeft, gridMarginTop, cellWidth * totalLength, cellHeight* #pattern )
          love.graphics.setColor(1,1,1)
@@ -453,9 +450,14 @@ function love.draw()
             else
                love.graphics.setColor(0,0,0,.1)
             end
-            local mydeeperpitch = draw_vertical_slider('my-deeper-pitchslider-'..i, gridMarginLeft + i*cellWidth -cellWidth, gridMarginTop, cellHeight* #pattern, p.values[i].pitch, 0, 1, run)
-            if mydeeperpitch.value then
-               p.values[i].pitch = mydeeperpitch.value
+            local minmax = {['volume']={0,1} ,['pan']={-1,1},['pitch']={0,1}}
+            local mydeeper = draw_vertical_slider('my-'..openedNotePanel..'slider-'..i,
+                                                  gridMarginLeft + i*cellWidth -cellWidth,
+                                                  gridMarginTop,
+                                                  cellHeight* #pattern,
+                                                  p.values[i][openedNotePanel], minmax[openedNotePanel][1], minmax[openedNotePanel][2], run)
+            if mydeeper.value then
+               p.values[i][openedNotePanel] = mydeeper.value
             end
 
          end
