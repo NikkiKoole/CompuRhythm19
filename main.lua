@@ -294,6 +294,8 @@ function love.update(dt)
          local ratio =  line.sfx:tell("samples") / line.sfx:getDuration('samples')
          local vibratoPitch = (((ratio * 64 ) % 16) - 8)/ 24
          local result = math.max(line.pitch + vibratoPitch/2, 0.00001)
+
+	 line.sfx:setPitch(result)
          if line.isPlaying then
             if not line.sfx:isPlaying()  or ratio > (1.0 - line.falloff)then
                line.sfx:stop()
@@ -333,6 +335,7 @@ function love.draw()
          if openedInstrument == i then
             openedInstrument = 0
             pattern[i].selected = false
+	    openedNotePanel = nil
          else
             openedInstrument = i
             -- clear all others

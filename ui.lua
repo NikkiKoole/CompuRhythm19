@@ -119,24 +119,24 @@ end
 function draw_vertical_slider(id, x, y, height, v, min, max, mouseClicked)
    love.graphics.rectangle('fill',x+8,y,3,height )
    local yOffset = mapInto(v, min, max, 0, height)
-   love.graphics.rectangle('fill',x,y +height - yOffset,20,20 )
+   love.graphics.rectangle('fill',x,y +height - yOffset - 10,20,20 )
 
    local result= nil
    local draggedResult = false
 
-   if mouseClicked then
-      local mx, my = love.mouse.getPosition( )
-      if pointInRect(mx,my, x,y+height-yOffset,20,20) then
-         lastDraggedElement = {id=id}
-      end
-   end
+   -- if mouseClicked then
+   --    local mx, my = love.mouse.getPosition( )
+   --    if pointInRect(mx,my, x,y+height-yOffset,20,20) then
+   --       lastDraggedElement = {id=id}
+   --    end
+   -- end
 
    if love.mouse.isDown(1 ) then
       local mx, my = love.mouse.getPosition( )
       if (lastDraggedElement and lastDraggedElement.id == id) or
       (mx <= x+20 and mx >x) then
 
-         result = mapInto(my, y+height, y, min, max)
+         result = mapInto(my, y+height+10, y, min, max)
          result = math.max(result, min)
          result = math.min(result, max)
 
