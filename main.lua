@@ -124,7 +124,6 @@ function love.load()
 
    playing = false
 
-
    drawingValue = 1
    cellWidth = 22
    cellHeight = 32
@@ -221,7 +220,6 @@ function love.mousemoved(x,y)
       else
         -- print(openedNotePanel)
       end
-
    end
 end
 
@@ -294,14 +292,11 @@ function love.update(dt)
                line.isPlaying = true
 
                local chorusSound = line.sfx:clone()
-               chorusSound:setPitch(pitch*0.9)
+               chorusSound:setPitch(pitch*0.95)
                chorusSound:setVolume(line.volume)
                chorusSound:setPosition(line.pan,0, 0 )
                chorusSound:play()
-
             end
-
-
          end
       end
 
@@ -325,7 +320,6 @@ function love.update(dt)
 end
 
 function love.draw()
-
    local screenH = love.graphics.getHeight( )
    local screenW = love.graphics.getWidth( )
    love.graphics.clear(255/colorDivider, 198/colorDivider, 49/colorDivider)
@@ -394,14 +388,8 @@ function love.draw()
 
    if openedInstrument > 0 then
       local p = pattern[openedInstrument]
-      local ty = gridMarginTop + 100-- gridMarginTop + (openedInstrument-1)*cellHeight
-      --love.graphics.setColor(255/colorDivider,218/colorDivider,69/colorDivider)
+      local ty = gridMarginTop + 100
       local padding = 10
-
-      --love.graphics.setColor(0,0,0)
-      --draw_label_button(20, gridMarginTop, p.name)
-
-
 
       love.graphics.setColor(0,0,0)
       love.graphics.print('volume: '.. string.format("%.2f",p.volume), 20,  ty + 30)
@@ -459,19 +447,14 @@ function love.draw()
       local panels = {'volume', 'pitch', 'pan'}
       for i=1, #panels do
          local p = panels[i]
-
          if draw_label_button(20, ty+330+i*50, p, openedNotePanel == p, run).clicked then
             if openedNotePanel ~= p then
                openedNotePanel = p
             else
                openedNotePanel = nil
             end
-
          end
       end
-
-
-
 
       if openedNotePanel then
          love.graphics.setColor(255/colorDivider, 198/colorDivider, 49/colorDivider, 0.9)
@@ -492,7 +475,6 @@ function love.draw()
             if mydeeper.value then
                p.values[i][openedNotePanel] = mydeeper.value
             end
-
          end
       end
 
