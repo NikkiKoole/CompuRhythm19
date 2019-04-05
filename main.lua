@@ -164,6 +164,8 @@ function addBars(pattern, count)
       pattern[i].pan = 0
       pattern[i].falloff = 0
       pattern[i].accented = false
+      pattern[i].vibrato = 0
+      pattern[i].vibrato2 = 0
       for j = 0, count do
          table.insert(pattern[i].values, {on=false, volume=1, pitch=1, pan=0})
       end
@@ -267,6 +269,8 @@ function love.update(dt)
 
                table.insert(soundList, {playTime=time+timeToAdd,
                                         channelIndex=i,
+                                        vibrato=pattern[i].vibrato,
+                                        vibrato2=pattern[i].vibrato2 ,
                                         pitch=pattern.pitch * pattern[i].pitch * (pattern[i].values[timers[i].playhead].pitch or 1),
                                         volume=volume,
                                         falloff=pattern[i].falloff,
@@ -278,24 +282,37 @@ function love.update(dt)
 
       for i,line in ipairs(soundList) do
          if time >= line.playTime and not line.isPlaying then
-            line.sfx = line.sfx:clone()
-            local pitch = math.max(line.pitch, 0.00001)
-            line.sfx:setPitch(pitch)
-            line.sfx:setVolume(line.volume)
 
-            line.sfx:setPosition(line.pan,0, 0 )
-            line.sfx:play()
-            line.isPlaying = true
+            local chorus = true
+            if chorus then
+               line.sfx = line.sfx:clone()
+               local pitch = math.max(line.pitch, 0.00001)
+               line.sfx:setPitch(pitch)
+               line.sfx:setVolume(line.volume)
+               line.sfx:setPosition(line.pan,0, 0 )
+               line.sfx:play()
+               line.isPlaying = true
+
+               local chorusSound = line.sfx:clone()
+               chorusSound:setPitch(pitch*0.9)
+               chorusSound:setVolume(line.volume)
+               chorusSound:setPosition(line.pan,0, 0 )
+               chorusSound:play()
+
+            end
+
+
          end
       end
 
       -- todo tween the volume  (fadeIn and fadeOut)
       for i,line in ipairs(soundList) do
          local ratio =  line.sfx:tell("samples") / line.sfx:getDuration('samples')
-         local vibratoPitch = (((ratio * 64 ) % 16) - 8)/ 24
-         local result = math.max(line.pitch + vibratoPitch/2, 0.00001)
+         local general_ratio = (line.sfx:tell('samples')/ 48000)
+         local result = math.sin(general_ratio * line.vibrato) * line.vibrato2
+         result = math.max(line.pitch + result, 0.00001)
 
-	 line.sfx:setPitch(result)
+         line.sfx:setPitch(result)
          if line.isPlaying then
             if not line.sfx:isPlaying()  or ratio > (1.0 - line.falloff)then
                line.sfx:stop()
@@ -421,8 +438,21 @@ function love.draw()
          p.falloff = falloffslider.value
       end
 
+      love.graphics.setColor(0,0,0)
+      love.graphics.print('vibrato: '.. string.format("%.2f", p.vibrato), 20,  ty+280)
+      local vibratoslider = draw_knob('my-vibrato-slider', 150,  ty+290, p.vibrato, 0 , 10.0, run)
+      if vibratoslider.value then
+         p.vibrato = vibratoslider.value
+      end
 
-      if draw_label_button(20, ty+280, 'accented', p.accented, run).clicked then
+      love.graphics.setColor(0,0,0)
+      love.graphics.print('vibrato2: '.. string.format("%.2f", p.vibrato2), 20,  ty+330)
+      local vibrato2slider = draw_knob('my-vibrato2-slider', 150,  ty+340, p.vibrato2, 0 , 10.0, run)
+      if vibrato2slider.value then
+         p.vibrato2 = vibrato2slider.value
+      end
+
+      if draw_label_button(20, ty-40, 'accented', p.accented, run).clicked then
          p.accented = not p.accented
       end
 
@@ -430,7 +460,7 @@ function love.draw()
       for i=1, #panels do
          local p = panels[i]
 
-         if draw_label_button(20, ty+280+i*50, p, openedNotePanel == p, run).clicked then
+         if draw_label_button(20, ty+330+i*50, p, openedNotePanel == p, run).clicked then
             if openedNotePanel ~= p then
                openedNotePanel = p
             else
