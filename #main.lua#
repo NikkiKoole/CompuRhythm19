@@ -314,9 +314,6 @@ function love.update(dt)
 					      sfx=pattern[i].sound})
 		  --end
 	       end
-	       
-	       
-
             end
          end
       end
@@ -371,11 +368,20 @@ function love.draw()
 
    for i =1, #pattern do
 
-      if draw_button(gridMarginLeft - 30 , gridMarginTop + (i-1) * cellHeight,pattern[i].muted,run ).clicked then
+      if draw_button(gridMarginLeft - 30 ,
+		     gridMarginTop + (i-1) * cellHeight,
+		     pattern[i].muted,
+		     run ).clicked then
+	 
          pattern[i].muted = not pattern[i].muted
       end
 
-      if draw_label_button(gridMarginLeft - 126, gridMarginTop + (i-1) * cellHeight, pattern[i].name, pattern[i].selected, run).clicked then
+      if draw_label_button(gridMarginLeft - 126,
+			   gridMarginTop + (i-1) * cellHeight,
+			   pattern[i].name,
+			   pattern[i].selected,
+			   run).clicked then
+	 
          if openedInstrument == i then
             openedInstrument = 0
             pattern[i].selected = false
